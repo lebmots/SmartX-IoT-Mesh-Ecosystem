@@ -1,18 +1,41 @@
-namespace SmartX.Api
+
+using SmartX.Api.Data;
+using SmartX.Api.Services;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton<DeviceHealthService>();
+
+var app = builder.Build();
+
+app.MapGet("/", () =>
 {
-    public class Program
+    return "Smart-X IoT Mesh Gateway is running.";
+});
+
+app.MapGet("/api/devices", (DeviceHealthService healthService) =>
+{
+    foreach (var device in DeviceStore.Devices)
     {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
-            var app = builder.Build();
+        device.HealthStatus =
+        healthService.CalculateHealth(device.LastSeen);
 
-            app.MapGet("/", () =>
-            {
-                return "Smart-X Iot Mesh Getaway is running.";
-            }); 
-
-            app.Run();
-        }
+        device.HealthMessage =
+        healthService.GetHealthMessage(device.LastSeen);
     }
-}
+
+    return Results.Ok(DeviceStore.Devices);
+});
+
+app.Run();
+
+
+
+
+
+
+
+
+
+
+

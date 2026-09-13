@@ -1,12 +1,269 @@
 ﻿<Window x:Class="SmartX.Desktop.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SmartX.Desktop"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+Title="Smart-X IoT Mesh Ecosystem"
+Height="720"
+Width="1150"
+WindowStartupLocation="CenterScreen"
+Background="#F4F6F8">
+
     <Grid>
 
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+
+        <Border Grid.Row="0"
+Background="#18212F"
+Padding="30">
+
+            <StackPanel>
+
+                <TextBlock Text="SMART-X"
+Foreground="White"
+FontSize="32"
+FontWeight="Bold"/>
+
+                <TextBlock Text="IoT Mesh Ecosystem Management Gateway"
+Foreground="#CBD5E1"
+FontSize="16"
+Margin="0,5,0,0"/>
+
+            </StackPanel>
+
+        </Border>
+
+
+        <ScrollViewer Grid.Row="1"
+VerticalScrollBarVisibility="Auto">
+
+            <StackPanel Margin="40">
+
+                <TextBlock Text="Smart-X Management Console"
+FontSize="30"
+FontWeight="Bold"
+Foreground="#18212F"/>
+
+                <TextBlock Text="Monitor distributed IoT devices, telemetry streams and network activity."
+FontSize="16"
+Foreground="#64748B"
+Margin="0,8,0,35"/>
+
+
+                <Border Background="White"
+CornerRadius="10"
+Padding="25"
+Margin="0,0,0,20"
+BorderBrush="#D7DEE8"
+BorderThickness="1">
+
+                    <Grid>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="90"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="180"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0"
+Width="62"
+Height="62"
+CornerRadius="31"
+Background="#DCFCE7"
+HorizontalAlignment="Left"
+VerticalAlignment="Center">
+
+                            <TextBlock Text="01"
+Foreground="#15803D"
+FontSize="22"
+FontWeight="Bold"
+HorizontalAlignment="Center"
+VerticalAlignment="Center"/>
+
+                        </Border>
+
+                        <StackPanel Grid.Column="1">
+
+                            <TextBlock Text="Sensor Data Ingestion &amp; Telemetry"
+FontSize="21"
+FontWeight="Bold"
+Foreground="#18212F"/>
+
+                            <TextBlock Text="Register IoT devices, ingest telemetry, monitor device health and identify abnormal sensor activity."
+FontSize="14"
+Foreground="#64748B"
+Margin="0,8,15,0"
+TextWrapping="Wrap"/>
+
+                            <TextBlock Text="● ACTIVE"
+FontSize="12"
+FontWeight="Bold"
+Foreground="#15803D"
+Margin="0,12,0,0"/>
+
+                        </StackPanel>
+
+                        <Button Grid.Column="2"
+x:Name="btnTelemetry"
+Content="Open Telemetry"
+Height="45"
+Width="150"
+Background="#2563EB"
+Foreground="White"
+BorderThickness="0"
+FontWeight="SemiBold"
+Cursor="Hand"
+Click="btnTelemetry_Click"/>
+
+                    </Grid>
+
+                </Border>
+
+             
+
+                <Border Background="#F8FAFC"
+CornerRadius="10"
+Padding="25"
+Margin="0,0,0,20"
+BorderBrush="#E2E8F0"
+BorderThickness="1"
+Opacity="0.75">
+
+                    <Grid>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="90"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="180"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0"
+Width="62"
+Height="62"
+CornerRadius="31"
+Background="#E2E8F0">
+
+                            <TextBlock Text="02"
+Foreground="#64748B"
+FontSize="22"
+FontWeight="Bold"
+HorizontalAlignment="Center"
+VerticalAlignment="Center"/>
+
+                        </Border>
+
+                        <StackPanel Grid.Column="1">
+
+                            <TextBlock Text="Real-Time Command Stream &amp; History"
+FontSize="21"
+FontWeight="Bold"
+Foreground="#475569"/>
+
+                            <TextBlock Text="Send commands to connected IoT devices and review command history."
+FontSize="14"
+Foreground="#64748B"
+Margin="0,8,15,0"/>
+
+                            <TextBlock Text="🔒 PART 2"
+FontSize="12"
+FontWeight="Bold"
+Foreground="#64748B"
+Margin="0,12,0,0"/>
+
+                        </StackPanel>
+
+                        <Button Grid.Column="2"
+Content="Coming Soon"
+Height="45"
+Width="150"
+IsEnabled="False"/>
+
+                    </Grid>
+
+                </Border>
+
+              
+
+                <Border Background="#F8FAFC"
+CornerRadius="10"
+Padding="25"
+BorderBrush="#E2E8F0"
+BorderThickness="1"
+Opacity="0.75">
+
+                    <Grid>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="90"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="180"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0"
+Width="62"
+Height="62"
+CornerRadius="31"
+Background="#E2E8F0">
+
+                            <TextBlock Text="03"
+Foreground="#64748B"
+FontSize="22"
+FontWeight="Bold"
+HorizontalAlignment="Center"
+VerticalAlignment="Center"/>
+
+                        </Border>
+
+                        <StackPanel Grid.Column="1">
+
+                            <TextBlock Text="Network Topology &amp; Mesh Routing"
+FontSize="21"
+FontWeight="Bold"
+Foreground="#475569"/>
+
+                            <TextBlock Text="Visualise Smart-X mesh relationships and analyse network routing."
+FontSize="14"
+Foreground="#64748B"
+Margin="0,8,15,0"/>
+
+                            <TextBlock Text="🔒 FINAL POE"
+FontSize="12"
+FontWeight="Bold"
+Foreground="#64748B"
+Margin="0,12,0,0"/>
+
+                        </StackPanel>
+
+                        <Button Grid.Column="2"
+Content="Coming Soon"
+Height="45"
+Width="150"
+IsEnabled="False"/>
+
+                    </Grid>
+
+                </Border>
+
+            </StackPanel>
+
+        </ScrollViewer>
+
+     
+
+        <Border Grid.Row="2"
+Background="#E9EEF4"
+Padding="15">
+
+            <TextBlock Text=" "
+HorizontalAlignment="Center"
+Foreground="#64748B"
+FontSize="12"/>
+
+        </Border>
+
     </Grid>
+
 </Window>
