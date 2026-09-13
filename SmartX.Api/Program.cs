@@ -9,9 +9,7 @@ builder.Services.AddSingleton<DeviceHealthService>();
 builder.Services.AddSingleton<TelemetryValidationService>();
 builder.Services.AddSingleton<MockTelemetryService>();
 builder.Services.AddSingleton<DeploymentHierarchyService>();
-
-
-
+builder.Services.AddSingleton<DeviceRegistrationService>();
 
 
 
@@ -340,6 +338,70 @@ Type = "Node"
         ValidationMessage = validationMessage
     });
 });
+
+
+
+
+
+app.MapPost(
+"/api/devices/register",
+(
+DeviceRegistrationRequest request,
+DeviceRegistrationService registrationService
+) =>
+{
+    bool registered =
+    registrationService.RegisterDevice(
+    request,
+    out SensorDevice? device,
+    out string message);
+
+    if (!registered)
+    {
+        return Results.BadRequest(new
+        {
+            error = message
+        });
+    }
+
+    return Results.Created(
+    $"/api/devices/{device!.Id}",
+    new
+    {
+        message,
+        device
+    });
+});
+
+
+
+
+
+
+app.MapGet(
+"/api/devices/{id:int}",
+(int id) =>
+{
+    SensorDevice? device =
+    DeviceStore.Devices.FirstOrDefault(
+    d => d.Id == id);
+
+    if (device == null)
+    {
+        return Results.NotFound(new
+        {
+            error = "Device not found."
+        });
+    }
+
+    return Results.Ok(device);
+});
+
+
+
+
+
+
 
 
 

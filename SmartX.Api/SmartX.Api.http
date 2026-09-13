@@ -35,3 +35,16 @@ Content-Type: application/json
 "unit": "State"
 }
 
+
+
+### Register a new Smart-X device
+POST {{SmartXApi_HostAddress}}/api/devices/register
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0005",
+"macAddress": "AA:BB:CC:11:22:05",
+"deploymentLocation": "Facility B / Zone 2 / Node 1",
+"category": 0
+}
+
