@@ -8,6 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<DeviceHealthService>();
 builder.Services.AddSingleton<TelemetryValidationService>();
 builder.Services.AddSingleton<MockTelemetryService>();
+builder.Services.AddSingleton<DeploymentHierarchyService>();
+
+
+
+
 
 
 var app = builder.Build();
@@ -236,9 +241,105 @@ app.MapGet("/api/operator-demo", () =>
 
 
 
+app.MapGet(
+"/api/deployment/demo",
+(DeploymentHierarchyService hierarchyService) =>
+{
+    DeploymentNode facility = new()
+    {
+        Name = "Facility A",
+        Type = "Facility",
+        Children =
+{
+new DeploymentNode
+{
+Name = "Zone 1",
+Type = "Zone",
+Children =
+{
+new DeploymentNode
+{
+Name = "Node 1",
+Type = "Node"
+},
+new DeploymentNode
+{
+Name = "Node 2",
+Type = "Node"
+}
+}
+},
+new DeploymentNode
+{
+Name = "Zone 2",
+Type = "Zone",
+Children =
+{
+new DeploymentNode
+{
+Name = "Node 3",
+Type = "Node"
+}
+}
+}
+}
+    };
+
+    bool isValid =
+    hierarchyService.ValidateHierarchy(
+    facility,
+    out string validationMessage);
+
+    int totalNodes =
+    hierarchyService.CountNodes(facility);
+
+    return Results.Ok(new
+    {
+        Hierarchy = facility,
+        IsValid = isValid,
+        ValidationMessage = validationMessage,
+        TotalNodes = totalNodes
+    });
+});
 
 
+app.MapGet(
+"/api/deployment/invalid-demo",
+(DeploymentHierarchyService hierarchyService) =>
+{
+    DeploymentNode facility = new()
+    {
+        Name = "Facility B",
+        Type = "Facility",
+        Children =
+{
+new DeploymentNode
+{
+Name = "Zone 1",
+Type = "Zone",
+Children =
+{
+new DeploymentNode
+{
+Name = "",
+Type = "Node"
+}
+}
+}
+}
+    };
 
+    bool isValid =
+    hierarchyService.ValidateHierarchy(
+    facility,
+    out string validationMessage);
+
+    return Results.Ok(new
+    {
+        IsValid = isValid,
+        ValidationMessage = validationMessage
+    });
+});
 
 
 
