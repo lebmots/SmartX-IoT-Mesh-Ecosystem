@@ -198,6 +198,48 @@ app.MapGet("/api/telemetry/summary", () =>
 
 
 
+app.MapGet("/api/operator-demo", () =>
+{
+    SensorReading meter1 = new()
+    {
+        DeviceId = "ESP32-0002",
+        Metric = "PowerWattage",
+        Value = 1200,
+        Unit = "W"
+    };
+
+    SensorReading meter2 = new()
+    {
+        DeviceId = "ESP32-0005",
+        Metric = "PowerWattage",
+        Value = 850,
+        Unit = "W"
+    };
+
+    SensorReading combinedReading = meter1 + meter2;
+    SensorReading difference = meter1 - meter2;
+
+    bool meter1Higher = meter1 > meter2;
+    bool meter1Lower = meter1 < meter2;
+
+    return Results.Ok(new
+    {
+        Meter1 = meter1.Value,
+        Meter2 = meter2.Value,
+        Combined = combinedReading.Value,
+        Difference = difference.Value,
+        Meter1HigherThanMeter2 = meter1Higher,
+        Meter1LowerThanMeter2 = meter1Lower
+    });
+});
+
+
+
+
+
+
+
+
 
 
 
