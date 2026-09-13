@@ -10,6 +10,10 @@ builder.Services.AddSingleton<TelemetryValidationService>();
 builder.Services.AddSingleton<MockTelemetryService>();
 builder.Services.AddSingleton<DeploymentHierarchyService>();
 builder.Services.AddSingleton<DeviceRegistrationService>();
+builder.Services.AddSingleton<AttachmentService>();
+
+
+
 
 
 
@@ -402,6 +406,75 @@ app.MapGet(
 
 
 
+
+app.MapPost(
+"/api/devices/{deviceId}/attachments",
+async (
+string deviceId,
+HttpRequest request,
+AttachmentService attachmentService) =>
+{
+    if (!request.HasFormContentType)
+    {
+        return Results.BadRequest(new
+        {
+            error = "Multipart form data is required."
+        });
+    }
+
+    IFormCollection form =
+    await request.ReadFormAsync();
+
+    IFormFile? file =
+    form.Files.GetFile("file");
+
+    string attachmentCategory =
+    form["attachmentCategory"].ToString();
+
+    string uploadRoot =
+    Path.Combine(
+    Directory.GetCurrentDirectory(),
+    "Uploads");
+
+    var result =
+    await attachmentService.SaveAttachmentAsync(
+    deviceId,
+    attachmentCategory,
+    file!,
+    uploadRoot);
+
+    if (!result.Success)
+    {
+        return Results.BadRequest(new
+        {
+            error = result.Message
+        });
+    }
+
+    return Results.Ok(new
+    {
+        message = result.Message,
+        attachment = result.Attachment
+    });
+});
+
+
+
+
+app.MapGet(
+"/api/devices/{deviceId}/attachments",
+(string deviceId) =>
+{
+    var attachments =
+    AttachmentStore.Attachments
+    .Where(
+    a => a.DeviceId.Equals(
+    deviceId,
+    StringComparison.OrdinalIgnoreCase))
+    .ToList();
+
+    return Results.Ok(attachments);
+});
 
 
 

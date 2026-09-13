@@ -48,3 +48,19 @@ Content-Type: application/json
 "category": 0
 }
 
+
+### Upload hardware log
+POST {{SmartXApi_HostAddress}}/api/devices/ESP32-0001/attachments
+Content-Type: multipart/form-data; boundary=SmartXBoundary
+
+--SmartXBoundary
+Content-Disposition: form-data; name="attachmentCategory"
+
+HardwareLog
+--SmartXBoundary
+Content-Disposition: form-data; name="file"; filename="hardware-log.txt"
+Content-Type: text/plain
+
+< ./hardware-log.txt
+--SmartXBoundary--
+
