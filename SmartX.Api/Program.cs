@@ -7,11 +7,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<DeviceHealthService>();
 builder.Services.AddSingleton<TelemetryValidationService>();
+builder.Services.AddSingleton<MockTelemetryService>();
 
 
 var app = builder.Build();
 
 TelemetrySeedData.Seed();
+var mockTelemetryService =
+app.Services.GetRequiredService<MockTelemetryService>();
+
+mockTelemetryService.LoadHistoricalTemperatureBatches();
+mockTelemetryService.SeedLargeTelemetrySet();
+
 
 app.MapGet("/", () =>
 {
@@ -170,6 +177,22 @@ TelemetryValidationService validationService
 
 
 
+
+app.MapGet("/api/telemetry/summary", () =>
+{
+    return Results.Ok(new
+    {
+        FloatReadings = TelemetryStore.FloatTelemetry.Count,
+        IntegerReadings = TelemetryStore.IntegerTelemetry.Count,
+        BooleanReadings = TelemetryStore.BooleanTelemetry.Count,
+        TotalReadings =
+    TelemetryStore.FloatTelemetry.Count +
+    TelemetryStore.IntegerTelemetry.Count +
+    TelemetryStore.BooleanTelemetry.Count,
+        HistoricalBatchCount =
+    HistoricalBatchStore.TemperatureBatches.Length
+    });
+});
 
 
 
