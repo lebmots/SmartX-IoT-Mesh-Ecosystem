@@ -1,0 +1,37 @@
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+
+@SmartXApi_HostAddress = https://localhost:7031
+
+### Float telemetry
+POST {{SmartXApi_HostAddress}}/api/telemetry/float
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0001",
+"metric": "Temperature",
+"value": 29.4,
+"unit": "°C"
+}
+
+### Integer telemetry
+POST {{SmartXApi_HostAddress}}/api/telemetry/int
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0002",
+"metric": "PowerWattage",
+"value": 2100,
+"unit": "W"
+}
+
+### Boolean telemetry
+POST {{SmartXApi_HostAddress}}/api/telemetry/bool
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0003",
+"metric": "ValveState",
+"value": false,
+"unit": "State"
+}
+
