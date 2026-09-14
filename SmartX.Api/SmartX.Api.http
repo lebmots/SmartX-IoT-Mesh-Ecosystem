@@ -140,6 +140,40 @@ Content-Type: application/json
 GET https://localhost:7031/api/devices/ESP32-0001/attachments
 
 
+### Final temperature anomaly test
+
+POST https://localhost:7031/api/telemetry/float
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0001",
+"metric": "Temperature",
+"value": 55.5,
+"unit": "C"
+}
+
+
+
+### Final power anomaly test
+
+POST https://localhost:7031/api/telemetry/int
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0002",
+"metric": "PowerWattage",
+"value": 7000,
+"unit": "W"
+}
+
+
+
+### Final attachment verification
+
+GET https://localhost:7031/api/devices/ESP32-0001/attachments
+
+
+
 
 
 
