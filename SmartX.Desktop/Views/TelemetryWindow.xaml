@@ -35,7 +35,7 @@ TargetType="Button">
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- HEADER -->
+        
         <Border Grid.Row="0"
 Background="#102A43">
 
@@ -86,7 +86,7 @@ VerticalAlignment="Center"/>
 
         </Border>
 
-        <!-- MAIN CONTENT -->
+        
         <ScrollViewer Grid.Row="1"
 VerticalScrollBarVisibility="Auto">
 
@@ -102,7 +102,7 @@ VerticalScrollBarVisibility="Auto">
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- PAGE TITLE -->
+                
                 <StackPanel Grid.Row="0">
 
                     <TextBlock Text="Sensor Data Ingestion &amp; Telemetry"
@@ -117,7 +117,7 @@ FontSize="14"/>
 
                 </StackPanel>
 
-                <!-- SUMMARY CARDS -->
+                
                 <Grid Grid.Row="2">
 
                     <Grid.ColumnDefinitions>
@@ -251,6 +251,7 @@ FontWeight="Bold"/>
                     </Border>
 
                     <!-- Disconnected -->
+
                     <Border Grid.Column="4"
 Style="{StaticResource SummaryCardStyle}"
 Background="#E8ECEF">
@@ -293,7 +294,8 @@ FontWeight="Bold"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel>
+                    <!-- Left side -->
+                    <StackPanel Grid.Column="0">
 
                         <TextBlock Text="Registered Devices"
 FontSize="18"
@@ -307,13 +309,26 @@ Margin="0,3,0,0"/>
 
                     </StackPanel>
 
-                    <Button x:Name="btnRefresh"
-Grid.Column="1"
+                    <!-- Right side -->
+                    <StackPanel Grid.Column="1"
+Orientation="Horizontal"
+VerticalAlignment="Center">
+
+                        <TextBlock x:Name="txtLastRefresh"
+Text="Waiting for data..."
+Foreground="#6B7C8F"
+FontSize="12"
+VerticalAlignment="Center"
+Margin="0,0,15,0"/>
+
+                        <Button x:Name="btnRefresh"
 Content="↻ Refresh Devices"
 Width="160"
 Height="38"
 Style="{StaticResource PrimaryButtonStyle}"
 Click="btnRefresh_Click"/>
+
+                    </StackPanel>
 
                 </Grid>
 
@@ -341,17 +356,25 @@ SelectionMode="Single">
                         <DataGrid.Resources>
 
                             <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="#EAF1F6"/>
-                                <Setter Property="Foreground" Value="#102A43"/>
-                                <Setter Property="FontWeight" Value="SemiBold"/>
-                                <Setter Property="Padding" Value="10"/>
-                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Background"
+Value="#EAF1F6"/>
+                                <Setter Property="Foreground"
+Value="#102A43"/>
+                                <Setter Property="FontWeight"
+Value="SemiBold"/>
+                                <Setter Property="Padding"
+Value="10"/>
+                                <Setter Property="BorderThickness"
+Value="0"/>
                             </Style>
 
                             <Style TargetType="DataGridCell">
-                                <Setter Property="Padding" Value="8"/>
-                                <Setter Property="BorderThickness" Value="0"/>
-                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                <Setter Property="Padding"
+Value="8"/>
+                                <Setter Property="BorderThickness"
+Value="0"/>
+                                <Setter Property="VerticalContentAlignment"
+Value="Center"/>
                             </Style>
 
                         </DataGrid.Resources>
@@ -395,4 +418,3 @@ Width="250"/>
     </Grid>
 
 </Window>
-
