@@ -36,8 +36,25 @@ namespace SmartX.Desktop.Views
         {
             try
             {
-                dgDevices.ItemsSource =
+                var devices =
                 await _apiService.GetDevicesAsync();
+
+                dgDevices.ItemsSource = devices;
+
+                txtTotalDevices.Text =
+                devices.Count.ToString();
+
+                txtHealthy.Text =
+                devices.Count(d => d.HealthStatus == 0).ToString();
+
+                txtWarning.Text =
+                devices.Count(d => d.HealthStatus == 1).ToString();
+
+                txtCritical.Text =
+                devices.Count(d => d.HealthStatus == 2).ToString();
+
+                txtDisconnected.Text =
+                devices.Count(d => d.HealthStatus == 3).ToString();
             }
             catch (Exception ex)
             {
@@ -48,6 +65,7 @@ namespace SmartX.Desktop.Views
                 MessageBoxImage.Error);
             }
         }
+
     }
 }
 

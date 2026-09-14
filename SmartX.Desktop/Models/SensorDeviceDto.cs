@@ -23,8 +23,40 @@ namespace SmartX.Desktop.Models
         public int HealthStatus { get; set; }
 
         public string HealthMessage { get; set; } = string.Empty;
+
+        public string CategoryText
+        {
+            get
+            {
+                return Category switch
+                {
+                    0 => "Environmental",
+                    1 => "Power Consumption",
+                    2 => "Actuator",
+                    _ => "Unknown"
+                };
+            }
+        }
+
+        public string HealthStatusText
+        {
+            get
+            {
+                return HealthStatus switch
+                {
+                    0 => "🟢 Healthy",
+                    1 => "🟡 Warning",
+                    2 => "🔴 Critical",
+                    3 => "⚫ Disconnected",
+                    _ => "Unknown"
+                };
+            }
+        }
     }
 }
+
+
+
 
 
 
