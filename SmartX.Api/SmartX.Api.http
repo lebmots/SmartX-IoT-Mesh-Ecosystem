@@ -64,3 +64,52 @@ Content-Type: text/plain
 < ./hardware-log.txt
 --SmartXBoundary--
 
+### Normal temperature telemetry test
+POST https://localhost:7031/api/telemetry/float
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0001",
+"metric": "Temperature",
+"value": 25.5,
+"unit": "C"
+}
+
+### Abnormal temperature spike test
+
+POST https://localhost:7031/api/telemetry/float
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0001",
+"metric": "Temperature",
+"value": 58.7,
+"unit": "C"
+}
+
+
+### Abnormal power consumption test
+
+POST https://localhost:7031/api/telemetry/int
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0002",
+"metric": "PowerWattage",
+"value": 7200,
+"unit": "W"
+}
+
+
+### View detected anomalies
+
+GET https://localhost:7031/api/anomalies
+
+
+
+
+
+
+
+
+

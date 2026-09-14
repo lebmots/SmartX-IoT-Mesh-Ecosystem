@@ -12,6 +12,7 @@ builder.Services.AddSingleton<DeploymentHierarchyService>();
 builder.Services.AddSingleton<DeviceRegistrationService>();
 builder.Services.AddSingleton<AttachmentService>();
 builder.Services.AddSingleton<DeviceSimulationService>();
+builder.Services.AddSingleton<AnomalyDetectionService>();
 
 
 var app = builder.Build();
@@ -67,12 +68,22 @@ app.MapGet("/api/telemetry/bool", () =>
 
 
 
+app.MapGet("/api/anomalies", () =>
+{
+    return Results.Ok(
+    AnomalyStore.Anomalies
+    .OrderByDescending(a => a.DetectedAt)
+    .ToList());
+});
+
+
 
 app.MapPost(
 "/api/telemetry/float",
 (
 TelemetryPacket<float> packet,
-TelemetryValidationService validationService
+TelemetryValidationService validationService,
+AnomalyDetectionService anomalyDetectionService
 ) =>
 {
     if (!validationService.IsValid(packet, out string message))
@@ -86,6 +97,22 @@ TelemetryValidationService validationService
     packet.Timestamp = DateTime.UtcNow;
 
     TelemetryStore.FloatTelemetry.Add(packet);
+
+    if (anomalyDetectionService.IsFloatAnomaly(
+    packet,
+    out string anomalyMessage))
+    {
+        AnomalyStore.Anomalies.Add(
+        new AnomalyRecord
+        {
+            Id = AnomalyStore.Anomalies.Count + 1,
+            DeviceId = packet.DeviceId,
+            Metric = packet.Metric,
+            Message = anomalyMessage,
+            DetectedAt = DateTime.UtcNow
+        });
+    }
+
 
     SensorDevice? device =
     DeviceStore.Devices.FirstOrDefault(
@@ -112,7 +139,8 @@ app.MapPost(
 "/api/telemetry/int",
 (
 TelemetryPacket<int> packet,
-TelemetryValidationService validationService
+TelemetryValidationService validationService,
+AnomalyDetectionService anomalyDetectionService
 ) =>
 {
     if (!validationService.IsValid(packet, out string message))
@@ -126,6 +154,24 @@ TelemetryValidationService validationService
     packet.Timestamp = DateTime.UtcNow;
 
     TelemetryStore.IntegerTelemetry.Add(packet);
+
+
+    if (anomalyDetectionService.IsIntegerAnomaly(
+    packet,
+    out string anomalyMessage))
+    {
+        AnomalyStore.Anomalies.Add(
+        new AnomalyRecord
+        {
+            Id = AnomalyStore.Anomalies.Count + 1,
+            DeviceId = packet.DeviceId,
+            Metric = packet.Metric,
+            Message = anomalyMessage,
+            DetectedAt = DateTime.UtcNow
+        });
+    }
+
+
 
     SensorDevice? device =
     DeviceStore.Devices.FirstOrDefault(
