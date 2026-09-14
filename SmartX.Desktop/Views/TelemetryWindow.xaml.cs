@@ -1,8 +1,10 @@
 ﻿
 
+using Microsoft.Win32;
+using SmartX.Desktop.Models;
+using SmartX.Desktop.Services;
 using System.Windows;
 using System.Windows.Threading;
-using SmartX.Desktop.Services;
 
 namespace SmartX.Desktop.Views
 {
@@ -141,6 +143,93 @@ namespace SmartX.Desktop.Views
             if (registerWindow.DeviceRegistered)
             {
                 await LoadDevicesAsync();
+            }
+        }
+
+        private async void btnUploadAttachment_Click(
+        object sender,
+        RoutedEventArgs e)
+        {
+            if (dgDevices.SelectedItem is not SensorDeviceDto selectedDevice)
+            {
+                MessageBox.Show(
+                "Please select a device from the table first.",
+                "Select Device",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+
+                return;
+            }
+
+            OpenFileDialog dialog = new()
+            {
+                Title = "Select Smart-X Device Attachment",
+                Filter =
+            "Supported Files|*.txt;*.log;*.json;*.xml;*.csv;*.jpg;*.jpeg;*.png|" +
+            "All Files|*.*"
+            };
+
+            bool? result = dialog.ShowDialog();
+
+            if (result != true)
+            {
+                return;
+            }
+
+            string extension =
+            System.IO.Path.GetExtension(dialog.FileName)
+            .ToLower();
+
+            string category;
+
+            if (extension == ".jpg" ||
+            extension == ".jpeg" ||
+            extension == ".png")
+            {
+                category = "DeploymentPhoto";
+            }
+            else if (extension == ".log" ||
+            extension == ".txt")
+            {
+                category = "HardwareLog";
+            }
+            else
+            {
+                category = "Configuration";
+            }
+
+            try
+            {
+                var uploadResult =
+                await _apiService.UploadAttachmentAsync(
+                selectedDevice.DeviceId,
+                dialog.FileName,
+                category);
+
+                if (uploadResult.Success)
+                {
+                    MessageBox.Show(
+                    $"Attachment uploaded successfully.\n\nCategory: {category}",
+                    "Smart-X",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show(
+                    $"Upload failed.\n\n{uploadResult.Message}",
+                    "Upload Failed",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                $"Unable to upload attachment.\n\n{ex.Message}",
+                "Connection Error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
             }
         }
 

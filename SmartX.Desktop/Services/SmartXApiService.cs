@@ -1,6 +1,7 @@
-﻿using System.Net.Http;
+﻿using SmartX.Desktop.Models;
+using System.IO;
+using System.Net.Http;
 using System.Net.Http.Json;
-using SmartX.Desktop.Models;
 
 namespace SmartX.Desktop.Services
 {
@@ -66,6 +67,53 @@ namespace SmartX.Desktop.Services
             error
             );
         }
+
+        public async Task<(bool Success, string Message)> UploadAttachmentAsync(
+        string deviceId,
+        string filePath,
+        string attachmentCategory)
+        {
+            using MultipartFormDataContent content = new();
+
+            using FileStream fileStream =
+            File.OpenRead(filePath);
+
+            using StreamContent fileContent =
+            new(fileStream);
+
+            content.Add(
+            fileContent,
+            "file",
+            Path.GetFileName(filePath));
+
+            content.Add(
+            new StringContent(attachmentCategory),
+            "attachmentCategory");
+
+            HttpResponseMessage response =
+            await _httpClient.PostAsync(
+            $"api/devices/{deviceId}/attachments",
+            content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return (
+                true,
+                "Attachment uploaded successfully."
+                );
+            }
+
+            string error =
+            await response.Content.ReadAsStringAsync();
+
+            return (
+            false,
+            error
+            );
+        }
+
+
+
 
 
     }

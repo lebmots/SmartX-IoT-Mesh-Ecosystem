@@ -135,6 +135,12 @@ Content-Type: application/json
 
 
 
+### View device attachments
+
+GET https://localhost:7031/api/devices/ESP32-0001/attachments
+
+
+
 
 
 

@@ -326,6 +326,21 @@ VerticalAlignment="Center"
 Margin="0,0,15,0"/>
 
 
+
+                        <Button x:Name="btnUploadAttachment"
+Content="Upload Attachment"
+Width="155"
+Height="38"
+Margin="0,0,10,0"
+Background="#486581"
+Foreground="White"
+BorderThickness="0"
+FontWeight="SemiBold"
+Cursor="Hand"
+Click="btnUploadAttachment_Click"/>
+
+
+
                         <Button x:Name="btnRegisterDevice"
 Content="+ Register Device"
 Width="150"
