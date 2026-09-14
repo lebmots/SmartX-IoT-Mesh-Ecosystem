@@ -325,6 +325,20 @@ FontSize="12"
 VerticalAlignment="Center"
 Margin="0,0,15,0"/>
 
+
+                        <Button x:Name="btnRegisterDevice"
+Content="+ Register Device"
+Width="150"
+Height="38"
+Margin="0,0,10,0"
+Background="#102A43"
+Foreground="White"
+BorderThickness="0"
+FontWeight="SemiBold"
+Cursor="Hand"
+Click="btnRegisterDevice_Click"/>
+
+
                         <Button x:Name="btnRefresh"
 Content="↻ Refresh Devices"
 Width="160"

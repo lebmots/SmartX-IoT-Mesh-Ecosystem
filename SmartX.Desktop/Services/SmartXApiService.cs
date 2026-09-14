@@ -42,6 +42,32 @@ namespace SmartX.Desktop.Services
             return anomalies ?? new List<AnomalyRecordDto>();
         }
 
+        public async Task<(bool Success, string Message)> RegisterDeviceAsync(
+        DeviceRegistrationDto request)
+        {
+            HttpResponseMessage response =
+            await _httpClient.PostAsJsonAsync(
+            "api/devices/register",
+            request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return (
+                true,
+                "Device registered successfully."
+                );
+            }
+
+            string error =
+            await response.Content.ReadAsStringAsync();
+
+            return (
+            false,
+            error
+            );
+        }
+
+
     }
 }
 

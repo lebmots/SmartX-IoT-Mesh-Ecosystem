@@ -123,7 +123,27 @@ namespace SmartX.Desktop.Views
             {
                 _isRefreshing = false;
             }
+
+
         }
+
+        private async void btnRegisterDevice_Click(
+        object sender,
+        RoutedEventArgs e)
+        {
+            RegisterDeviceWindow registerWindow = new()
+            {
+                Owner = this
+            };
+
+            registerWindow.ShowDialog();
+
+            if (registerWindow.DeviceRegistered)
+            {
+                await LoadDevicesAsync();
+            }
+        }
+
 
     }
 }
