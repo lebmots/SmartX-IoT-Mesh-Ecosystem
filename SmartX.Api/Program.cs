@@ -11,10 +11,7 @@ builder.Services.AddSingleton<MockTelemetryService>();
 builder.Services.AddSingleton<DeploymentHierarchyService>();
 builder.Services.AddSingleton<DeviceRegistrationService>();
 builder.Services.AddSingleton<AttachmentService>();
-
-
-
-
+builder.Services.AddSingleton<DeviceSimulationService>();
 
 
 var app = builder.Build();
@@ -32,8 +29,15 @@ app.MapGet("/", () =>
     return "Smart-X IoT Mesh Gateway is running.";
 });
 
-app.MapGet("/api/devices", (DeviceHealthService healthService) =>
+app.MapGet(
+"/api/devices",
+(
+DeviceHealthService healthService,
+DeviceSimulationService simulationService
+) =>
 {
+    simulationService.UpdateSimulatedConnectivity();
+
     foreach (var device in DeviceStore.Devices)
     {
         device.HealthStatus =
