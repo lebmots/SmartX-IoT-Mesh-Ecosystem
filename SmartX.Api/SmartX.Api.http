@@ -107,6 +107,39 @@ GET https://localhost:7031/api/anomalies
 
 
 
+### Dashboard anomaly test - temperature
+
+POST https://localhost:7031/api/telemetry/float
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0001",
+"metric": "Temperature",
+"value": 58.7,
+"unit": "C"
+}
+
+
+### Dashboard anomaly test - wattage
+
+POST https://localhost:7031/api/telemetry/int
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0002",
+"metric": "PowerWattage",
+"value": 7200,
+"unit": "W"
+}
+
+
+
+
+
+
+
+
+
 
 
 

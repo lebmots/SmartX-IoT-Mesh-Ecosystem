@@ -99,7 +99,11 @@ VerticalScrollBarVisibility="Auto">
                     <RowDefinition Height="25"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="12"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="300"/>
+                    <RowDefinition Height="25"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="12"/>
+                    <RowDefinition Height="220"/>
                 </Grid.RowDefinitions>
 
                 
@@ -410,6 +414,116 @@ Width="250"/>
                     </DataGrid>
 
                 </Border>
+
+                <!-- ANOMALY SECTION HEADER -->
+                <Grid Grid.Row="8">
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+
+                        <TextBlock Text="Recent Anomalies"
+FontSize="18"
+FontWeight="Bold"
+Foreground="#102A43"/>
+
+                        <TextBlock Text="Detected telemetry spikes and abnormal sensor readings"
+Foreground="#6B7C8F"
+FontSize="12"
+Margin="0,3,0,0"/>
+
+                    </StackPanel>
+
+                    <Border Grid.Column="1"
+Background="#FCE3E3"
+CornerRadius="14"
+Padding="12,6"
+VerticalAlignment="Center">
+
+                        <StackPanel Orientation="Horizontal">
+
+                            <Ellipse Width="8"
+Height="8"
+Fill="#D64545"
+Margin="0,0,7,0"/>
+
+                            <TextBlock x:Name="txtAnomalyCount"
+Text="0 anomalies"
+Foreground="#B42318"
+FontWeight="SemiBold"
+FontSize="12"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                </Grid>
+
+                <!-- ANOMALY DATA GRID -->
+                <Border Grid.Row="10"
+Background="White"
+CornerRadius="10"
+BorderBrush="#D9E2EC"
+BorderThickness="1">
+
+                    <DataGrid x:Name="dgAnomalies"
+AutoGenerateColumns="False"
+IsReadOnly="True"
+CanUserAddRows="False"
+HeadersVisibility="Column"
+GridLinesVisibility="Horizontal"
+HorizontalGridLinesBrush="#E9EEF3"
+RowHeight="42"
+FontSize="13"
+BorderThickness="0"
+AlternatingRowBackground="#F8FAFC"
+SelectionMode="Single">
+
+                        <DataGrid.Resources>
+
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#EAF1F6"/>
+                                <Setter Property="Foreground" Value="#102A43"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Padding" Value="10"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                            </Style>
+
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="Padding" Value="8"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            </Style>
+
+                        </DataGrid.Resources>
+
+                        <DataGrid.Columns>
+
+                            <DataGridTextColumn Header="Device ID"
+Binding="{Binding DeviceId}"
+Width="150"/>
+
+                            <DataGridTextColumn Header="Metric"
+Binding="{Binding Metric}"
+Width="150"/>
+
+                            <DataGridTextColumn Header="Anomaly Description"
+Binding="{Binding Message}"
+Width="*"/>
+
+                            <DataGridTextColumn Header="Detected At"
+Binding="{Binding DetectedAtText}"
+Width="180"/>
+
+                        </DataGrid.Columns>
+
+                    </DataGrid>
+
+                </Border>
+
 
             </Grid>
 

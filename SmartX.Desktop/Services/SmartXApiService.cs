@@ -31,6 +31,17 @@ namespace SmartX.Desktop.Services
 
             return devices ?? new List<SensorDeviceDto>();
         }
+
+
+        public async Task<List<AnomalyRecordDto>> GetAnomaliesAsync()
+        {
+            List<AnomalyRecordDto>? anomalies =
+            await _httpClient.GetFromJsonAsync<List<AnomalyRecordDto>>(
+            "api/anomalies");
+
+            return anomalies ?? new List<AnomalyRecordDto>();
+        }
+
     }
 }
 

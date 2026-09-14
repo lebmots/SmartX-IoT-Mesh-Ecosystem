@@ -82,7 +82,16 @@ namespace SmartX.Desktop.Views
                 var devices =
                 await _apiService.GetDevicesAsync();
 
+                var anomalies = await _apiService.GetAnomaliesAsync();
+
                 dgDevices.ItemsSource = devices;
+
+                dgAnomalies.ItemsSource = anomalies;
+
+                txtAnomalyCount.Text =
+                anomalies.Count == 1
+                ? "1 anomaly"
+                : $"{anomalies.Count} anomalies";
 
                 txtTotalDevices.Text =
                 devices.Count.ToString();
