@@ -13,6 +13,9 @@ builder.Services.AddSingleton<DeviceRegistrationService>();
 builder.Services.AddSingleton<AttachmentService>();
 builder.Services.AddSingleton<DeviceSimulationService>();
 builder.Services.AddSingleton<AnomalyDetectionService>();
+builder.Services.AddSingleton<TelemetryQueueService>();
+
+
 
 
 var app = builder.Build();
@@ -527,6 +530,56 @@ app.MapGet(
 });
 
 
+app.MapPost("/api/queue/enqueue",
+(QueuedTelemetry message, TelemetryQueueService queueService) =>
+{
+    if (string.IsNullOrWhiteSpace(message.DeviceId) ||
+    string.IsNullOrWhiteSpace(message.Metric) ||
+    double.IsNaN(message.Value) ||
+    double.IsInfinity(message.Value))
+    {
+        return Results.BadRequest("Invalid telemetry message.");
+    }
+
+    message.MessageId = Guid.NewGuid();
+    message.ReceivedAt = DateTime.UtcNow;
+
+    // Determine severity on the server rather than trusting the client.
+    var metric = message.Metric.Trim().ToLowerInvariant();
+
+    message.IsCritical =
+    (metric == "temperature" && (message.Value < 10 || message.Value > 40)) ||
+    (metric == "soilmoisture" && (message.Value < 20 || message.Value > 90)) ||
+    (metric == "powerwattage" && (message.Value < 0 || message.Value > 5000));
+
+    queueService.Enqueue(message);
+
+    return Results.Ok(new
+    {
+        message.MessageId,
+        message.DeviceId,
+        message.IsCritical,
+        Status = "Queued"
+    });
+});
+
+app.MapPost("/api/queue/process-next",
+(TelemetryQueueService queueService) =>
+{
+    var processed = queueService.ProcessNext();
+
+    return processed == null
+    ? Results.NoContent()
+    : Results.Ok(processed);
+});
+
+app.MapGet("/api/queue/status",
+(TelemetryQueueService queueService) =>
+Results.Ok(queueService.GetQueueStatus()));
+
+app.MapGet("/api/queue/processed",
+(TelemetryQueueService queueService) =>
+Results.Ok(queueService.GetProcessedMessages()));
 
 
 app.Run();

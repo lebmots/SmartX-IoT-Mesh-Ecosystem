@@ -188,6 +188,62 @@ Content-Type: application/json
 
 
 
+### Queue normal telemetry A
+POST https://localhost:7031/api/queue/enqueue
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0001",
+"metric": "Temperature",
+"value": 24.5,
+"unit": "C"
+}
+
+### Queue normal telemetry B
+POST https://localhost:7031/api/queue/enqueue
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0002",
+"metric": "Temperature",
+"value": 26.2,
+"unit": "C"
+}
+
+### Queue critical telemetry C
+POST https://localhost:7031/api/queue/enqueue
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0003",
+"metric": "Temperature",
+"value": 58.7,
+"unit": "C"
+}
+
+### Check queue status
+GET https://localhost:7031/api/queue/status
+
+### Process next message
+POST https://localhost:7031/api/queue/process-next
+
+### View processed messages
+GET https://localhost:7031/api/queue/processed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
