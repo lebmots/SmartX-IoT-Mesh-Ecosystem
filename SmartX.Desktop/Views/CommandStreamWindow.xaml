@@ -2,10 +2,42 @@
 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 Title="Smart-X | Real-Time Command Stream"
-Height="700"
-Width="1100"
+Height="800"
+Width="1250"
+MinHeight="650"
+MinWidth="1000"
 WindowStartupLocation="CenterOwner"
 Background="#F4F6F8">
+
+    <Window.Resources>
+        <Style x:Key="MetricLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#64748B"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+
+        <Style x:Key="MetricValue" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#18212F"/>
+            <Setter Property="FontSize" Value="28"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,7,0,0"/>
+        </Style>
+
+        <Style x:Key="PanelHeading" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#18212F"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+        </Style>
+    </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -13,49 +45,188 @@ Background="#F4F6F8">
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0"
-Background="#18212F"
-Padding="30">
-
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#18212F" Padding="25">
             <StackPanel>
-                <TextBlock Text="Real-Time Command Stream &amp; History"
+                <TextBlock Text="SMART-X | COMMAND CENTRE"
 FontSize="27"
 FontWeight="Bold"
 Foreground="White"/>
 
-                <TextBlock Text="Live telemetry processing, device commands and operational insights"
+                <TextBlock Text="Real-time telemetry, device control and predictive insights"
 FontSize="14"
 Foreground="#CBD5E1"
 Margin="0,6,0,0"/>
             </StackPanel>
         </Border>
 
-        <Grid Grid.Row="1" Margin="35">
-            <StackPanel VerticalAlignment="Center"
-HorizontalAlignment="Center">
+        <ScrollViewer Grid.Row="1"
+VerticalScrollBarVisibility="Auto"
+HorizontalScrollBarVisibility="Auto">
 
-                <TextBlock Text="Smart-X Command Centre"
-FontSize="30"
-FontWeight="Bold"
-Foreground="#18212F"
-HorizontalAlignment="Center"/>
+            <StackPanel Margin="30">
 
-                <TextBlock Text="Part 2 dashboard is ready for implementation."
-FontSize="16"
+                <!-- Summary cards -->
+                <UniformGrid Columns="4" Margin="0,0,0,25"
+xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+
+                    <Border Background="White" CornerRadius="10"
+Padding="20" Margin="0,0,12,0">
+                        <StackPanel>
+                            <TextBlock Text="Queued Telemetry"
+Style="{StaticResource MetricLabel}"/>
+                            <TextBlock x:Name="txtQueuedTelemetry"
+Text="0"
+Style="{StaticResource MetricValue}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="White" CornerRadius="10"
+Padding="20" Margin="0,0,12,0">
+                        <StackPanel>
+                            <TextBlock Text="Critical Alerts"
+Style="{StaticResource MetricLabel}"/>
+                            <TextBlock x:Name="txtCriticalAlerts"
+Text="0"
+Style="{StaticResource MetricValue}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="White" CornerRadius="10"
+Padding="20" Margin="0,0,12,0">
+                        <StackPanel>
+                            <TextBlock Text="Active Devices"
+Style="{StaticResource MetricLabel}"/>
+                            <TextBlock x:Name="txtActiveDevices"
+Text="0"
+Style="{StaticResource MetricValue}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="White" CornerRadius="10"
+Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="Commands Issued"
+Style="{StaticResource MetricLabel}"/>
+                            <TextBlock x:Name="txtCommandsIssued"
+Text="0"
+Style="{StaticResource MetricValue}"/>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+
+                <!-- Telemetry stream -->
+                <Border Background="White" CornerRadius="10"
+Padding="20" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="Live Telemetry Stream"
+Style="{StaticResource PanelHeading}"/>
+
+                        <DataGrid x:Name="dgTelemetry"
+Margin="0,15,0,0"
+Height="200"
+AutoGenerateColumns="True"
+IsReadOnly="True"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Device search -->
+                <Border Background="White" CornerRadius="10"
+Padding="20" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="Device Search &amp; Filtering"
+Style="{StaticResource PanelHeading}"/>
+
+                        <TextBox x:Name="txtDeviceSearch"
+Height="36"
+Margin="0,15,0,10"
+Padding="10,7"
+VerticalContentAlignment="Center"
+ToolTip="Search by device ID or category"/>
+
+                        <DataGrid x:Name="dgFilteredDevices"
+Height="180"
+AutoGenerateColumns="True"
+IsReadOnly="True"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Manual commands -->
+                <Border Background="White" CornerRadius="10"
+Padding="20" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="Manual Override Commands"
+Style="{StaticResource PanelHeading}"/>
+
+                        <TextBlock Text="Select a device and issue a command."
 Foreground="#64748B"
-Margin="0,12,0,0"
-HorizontalAlignment="Center"/>
+Margin="0,8,0,15"/>
 
-                <TextBlock Text="Next: Telemetry queues, priority alerts, manual commands and predictive insights."
-FontSize="14"
+                        <WrapPanel>
+                            <Button x:Name="btnPumpOn"
+Content="Pump ON"
+Style="{StaticResource ActionButton}"
+IsEnabled="False"/>
+
+                            <Button x:Name="btnPumpOff"
+Content="Pump OFF"
+Style="{StaticResource ActionButton}"
+IsEnabled="False"/>
+
+                            <Button x:Name="btnRelayOn"
+Content="Relay ON"
+Style="{StaticResource ActionButton}"
+IsEnabled="False"/>
+
+                            <Button x:Name="btnRelayOff"
+Content="Relay OFF"
+Style="{StaticResource ActionButton}"
+IsEnabled="False"/>
+
+                            <Button x:Name="btnUndo"
+Content="Undo Last Command"
+Style="{StaticResource ActionButton}"
+IsEnabled="False"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Command history -->
+                <Border Background="White" CornerRadius="10"
+Padding="20" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="Command History"
+Style="{StaticResource PanelHeading}"/>
+
+                        <DataGrid x:Name="dgCommandHistory"
+Margin="0,15,0,0"
+Height="180"
+AutoGenerateColumns="True"
+IsReadOnly="True"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Recommendations -->
+                <Border Background="White" CornerRadius="10"
+Padding="20" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="Suggested Actions &amp; Automated Insights"
+Style="{StaticResource PanelHeading}"/>
+
+                        <ListBox x:Name="lstSuggestedActions"
+Height="140"
+Margin="0,15,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="Smart-X Part 2 | Real-Time Processing &amp; Device Management"
 Foreground="#64748B"
-Margin="0,8,0,0"
-HorizontalAlignment="Center"/>
+FontSize="12"
+HorizontalAlignment="Center"
+Margin="0,5,0,0"/>
             </StackPanel>
-        </Grid>
+        </ScrollViewer>
     </Grid>
 </Window>
-
-
 
 
