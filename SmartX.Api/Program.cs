@@ -14,6 +14,8 @@ builder.Services.AddSingleton<AttachmentService>();
 builder.Services.AddSingleton<DeviceSimulationService>();
 builder.Services.AddSingleton<AnomalyDetectionService>();
 builder.Services.AddSingleton<TelemetryQueueService>();
+builder.Services.AddSingleton<DeviceLookupService>();
+builder.Services.AddSingleton<TelemetryHistoryService>();
 
 
 
@@ -531,7 +533,7 @@ app.MapGet(
 
 
 app.MapPost("/api/queue/enqueue",
-(QueuedTelemetry message, TelemetryQueueService queueService) =>
+(QueuedTelemetry message, TelemetryQueueService queueService, DeviceLookupService deviceLookup, TelemetryHistoryService historyService) =>
 {
     if (string.IsNullOrWhiteSpace(message.DeviceId) ||
     string.IsNullOrWhiteSpace(message.Metric) ||
@@ -553,6 +555,9 @@ app.MapPost("/api/queue/enqueue",
     (metric == "powerwattage" && (message.Value < 0 || message.Value > 5000));
 
     queueService.Enqueue(message);
+    deviceLookup.UpdateDevice(message);
+    historyService.AddReading(message);
+
 
     return Results.Ok(new
     {
@@ -580,6 +585,25 @@ Results.Ok(queueService.GetQueueStatus()));
 app.MapGet("/api/queue/processed",
 (TelemetryQueueService queueService) =>
 Results.Ok(queueService.GetProcessedMessages()));
+
+
+app.MapGet("/api/queue/devices",
+(DeviceLookupService deviceLookup) =>
+Results.Ok(deviceLookup.GetAllDevices()));
+
+app.MapGet("/api/queue/devices/{deviceId}",
+(string deviceId, DeviceLookupService deviceLookup) =>
+{
+    var device = deviceLookup.FindDevice(deviceId);
+
+    return device == null
+    ? Results.NotFound("No telemetry found for this device.")
+    : Results.Ok(device);
+});
+
+app.MapGet("/api/queue/history",
+(TelemetryHistoryService historyService) =>
+Results.Ok(historyService.GetHistory()));
 
 
 app.Run();

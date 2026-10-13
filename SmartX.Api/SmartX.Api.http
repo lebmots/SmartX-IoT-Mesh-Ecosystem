@@ -231,6 +231,14 @@ POST https://localhost:7031/api/queue/process-next
 GET https://localhost:7031/api/queue/processed
 
 
+### Find latest reading for a device
+GET https://localhost:7031/api/queue/devices/ESP32-0001
+
+### View latest readings for all devices
+GET https://localhost:7031/api/queue/devices
+
+### View timestamp-sorted telemetry history
+GET https://localhost:7031/api/queue/history
 
 
 
