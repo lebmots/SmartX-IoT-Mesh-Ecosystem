@@ -173,7 +173,17 @@ Content-Type: application/json
 GET https://localhost:7031/api/devices/ESP32-0001/attachments
 
 
+### Demo temperature anomaly
 
+POST https://localhost:7031/api/telemetry/float
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0001",
+"metric": "Temperature",
+"value": 58.7,
+"unit": "C"
+}
 
 
 

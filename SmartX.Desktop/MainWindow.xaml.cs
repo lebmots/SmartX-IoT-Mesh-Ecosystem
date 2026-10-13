@@ -28,6 +28,22 @@ namespace SmartX.Desktop
         }
 
 
+
+        private void btnCommandStream_Click(object sender, RoutedEventArgs e)
+        {
+            var commandWindow = new CommandStreamWindow
+            {
+                Owner = this
+            };
+
+            commandWindow.Show();
+        }
+
+
+
+
+
+
     }
 }
 

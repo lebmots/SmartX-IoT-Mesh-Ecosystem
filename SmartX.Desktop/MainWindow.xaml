@@ -122,18 +122,14 @@ Click="btnTelemetry_Click"/>
 
                 </Border>
 
-             
-
-                <Border Background="#F8FAFC"
+                <Border Background="White"
 CornerRadius="10"
 Padding="25"
 Margin="0,0,0,20"
-BorderBrush="#E2E8F0"
-BorderThickness="1"
-Opacity="0.75">
+BorderBrush="#D7DEE8"
+BorderThickness="1">
 
                     <Grid>
-
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="90"/>
                             <ColumnDefinition Width="*"/>
@@ -144,15 +140,14 @@ Opacity="0.75">
 Width="62"
 Height="62"
 CornerRadius="31"
-Background="#E2E8F0">
+Background="#DCFCE7">
 
                             <TextBlock Text="02"
-Foreground="#64748B"
+Foreground="#15803D"
 FontSize="22"
 FontWeight="Bold"
 HorizontalAlignment="Center"
 VerticalAlignment="Center"/>
-
                         </Border>
 
                         <StackPanel Grid.Column="1">
@@ -160,32 +155,37 @@ VerticalAlignment="Center"/>
                             <TextBlock Text="Real-Time Command Stream &amp; History"
 FontSize="21"
 FontWeight="Bold"
-Foreground="#475569"/>
+Foreground="#18212F"/>
 
-                            <TextBlock Text="Send commands to connected IoT devices and review command history."
+                            <TextBlock Text="Monitor live telemetry, manage device commands and review command history."
 FontSize="14"
 Foreground="#64748B"
-Margin="0,8,15,0"/>
+Margin="0,8,15,0"
+TextWrapping="Wrap"/>
 
-                            <TextBlock Text="🔒 PART 2"
+                            <TextBlock Text="● ACTIVE"
 FontSize="12"
 FontWeight="Bold"
-Foreground="#64748B"
+Foreground="#15803D"
 Margin="0,12,0,0"/>
 
                         </StackPanel>
 
                         <Button Grid.Column="2"
-Content="Coming Soon"
+x:Name="btnCommandStream"
+Content="Open Commands"
 Height="45"
 Width="150"
-IsEnabled="False"/>
+Background="#2563EB"
+Foreground="White"
+BorderThickness="0"
+FontWeight="SemiBold"
+Cursor="Hand"
+Click="btnCommandStream_Click"/>
 
                     </Grid>
-
                 </Border>
 
-              
 
                 <Border Background="#F8FAFC"
 CornerRadius="10"

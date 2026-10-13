@@ -1,0 +1,61 @@
+﻿<Window x:Class="SmartX.Desktop.Views.CommandStreamWindow"
+xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+Title="Smart-X | Real-Time Command Stream"
+Height="700"
+Width="1100"
+WindowStartupLocation="CenterOwner"
+Background="#F4F6F8">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+Background="#18212F"
+Padding="30">
+
+            <StackPanel>
+                <TextBlock Text="Real-Time Command Stream &amp; History"
+FontSize="27"
+FontWeight="Bold"
+Foreground="White"/>
+
+                <TextBlock Text="Live telemetry processing, device commands and operational insights"
+FontSize="14"
+Foreground="#CBD5E1"
+Margin="0,6,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="35">
+            <StackPanel VerticalAlignment="Center"
+HorizontalAlignment="Center">
+
+                <TextBlock Text="Smart-X Command Centre"
+FontSize="30"
+FontWeight="Bold"
+Foreground="#18212F"
+HorizontalAlignment="Center"/>
+
+                <TextBlock Text="Part 2 dashboard is ready for implementation."
+FontSize="16"
+Foreground="#64748B"
+Margin="0,12,0,0"
+HorizontalAlignment="Center"/>
+
+                <TextBlock Text="Next: Telemetry queues, priority alerts, manual commands and predictive insights."
+FontSize="14"
+Foreground="#64748B"
+Margin="0,8,0,0"
+HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
+
+
+
+
