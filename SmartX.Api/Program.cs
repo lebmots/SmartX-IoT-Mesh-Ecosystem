@@ -17,6 +17,9 @@ builder.Services.AddSingleton<TelemetryQueueService>();
 builder.Services.AddSingleton<DeviceLookupService>();
 builder.Services.AddSingleton<TelemetryHistoryService>();
 builder.Services.AddSingleton<ActiveAlertService>();
+builder.Services.AddSingleton<DeviceCommandService>();
+
+
 
 
 
@@ -661,6 +664,57 @@ app.MapPost("/api/alerts/reconnect/{deviceId}",
         Removed = removed
     });
 });
+
+
+
+
+
+app.MapPost("/api/commands/execute",
+(DeviceCommandRequest request, DeviceCommandService commandService) =>
+{
+    if (string.IsNullOrWhiteSpace(request.DeviceId) ||
+    string.IsNullOrWhiteSpace(request.CommandType))
+    {
+        return Results.BadRequest("Device ID and command type are required.");
+    }
+
+    string commandType = request.CommandType.Trim();
+
+    if (!commandType.Equals("Pump", StringComparison.OrdinalIgnoreCase) &&
+    !commandType.Equals("Relay", StringComparison.OrdinalIgnoreCase))
+    {
+        return Results.BadRequest("Command type must be Pump or Relay.");
+    }
+
+    var record = commandService.ExecuteCommand(request);
+
+    return Results.Ok(record);
+});
+
+app.MapPost("/api/commands/undo",
+(DeviceCommandService commandService) =>
+{
+    var undone = commandService.UndoLastCommand();
+
+    return undone == null
+    ? Results.NotFound("There are no commands available to undo.")
+    : Results.Ok(undone);
+});
+
+app.MapGet("/api/commands/history",
+(DeviceCommandService commandService) =>
+Results.Ok(commandService.GetHistory()));
+
+app.MapGet("/api/commands/states",
+(DeviceCommandService commandService) =>
+Results.Ok(commandService.GetDeviceStates()));
+
+app.MapGet("/api/commands/undo-count",
+(DeviceCommandService commandService) =>
+Results.Ok(new
+{
+    AvailableUndoCommands = commandService.GetUndoCount()
+}));
 
 
 

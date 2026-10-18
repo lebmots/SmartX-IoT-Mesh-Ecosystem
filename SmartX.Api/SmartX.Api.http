@@ -282,6 +282,58 @@ POST https://localhost:7031/api/alerts/reconnect/ESP32-0003
 
 
 
+### Turn pump ON
+POST https://localhost:7031/api/commands/execute
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0001",
+"commandType": "Pump",
+"turnOn": true
+}
+
+### Turn relay ON
+POST https://localhost:7031/api/commands/execute
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0001",
+"commandType": "Relay",
+"turnOn": true
+}
+
+### Turn pump OFF
+POST https://localhost:7031/api/commands/execute
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0001",
+"commandType": "Pump",
+"turnOn": false
+}
+
+### View current device states
+GET https://localhost:7031/api/commands/states
+
+### View command history
+GET https://localhost:7031/api/commands/history
+
+### Check available undo commands
+GET https://localhost:7031/api/commands/undo-count
+
+### Undo most recent command
+POST https://localhost:7031/api/commands/undo
+
+
+
+
+
+
+
+
+
+
+
 
 
 
