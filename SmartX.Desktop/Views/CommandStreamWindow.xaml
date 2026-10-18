@@ -131,25 +131,71 @@ IsReadOnly="True"/>
                 </Border>
 
                 <!-- Device search -->
-                <Border Background="White" CornerRadius="10"
-Padding="20" Margin="0,0,0,20">
+
+
+                <Border Background="White"
+CornerRadius="10"
+Padding="20"
+Margin="0,0,0,20">
+
                     <StackPanel>
                         <TextBlock Text="Device Search &amp; Filtering"
 Style="{StaticResource PanelHeading}"/>
 
-                        <TextBox x:Name="txtDeviceSearch"
+                        <Grid Margin="0,15,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox x:Name="txtDeviceSearch"
+Grid.Column="0"
 Height="36"
-Margin="0,15,0,10"
+Margin="0,0,10,0"
 Padding="10,7"
 VerticalContentAlignment="Center"
-ToolTip="Search by device ID or category"/>
+ToolTip="Search by device ID, MAC or location"/>
+
+                            <ComboBox x:Name="cmbCategory"
+Grid.Column="1"
+Height="36"
+Margin="0,0,10,0"
+SelectedIndex="0">
+                                <ComboBoxItem Content="All"/>
+                                <ComboBoxItem Content="Environmental"/>
+                                <ComboBoxItem Content="Power"/>
+                                <ComboBoxItem Content="Actuator"/>
+                            </ComboBox>
+
+                            <ComboBox x:Name="cmbAlertState"
+Grid.Column="2"
+Height="36"
+Margin="0,0,10,0"
+SelectedIndex="0">
+                                <ComboBoxItem Content="All"/>
+                                <ComboBoxItem Content="Active"/>
+                                <ComboBoxItem Content="Disconnected"/>
+                                <ComboBoxItem Content="Normal"/>
+                            </ComboBox>
+
+                            <Button Grid.Column="3"
+Content="Search"
+Width="90"
+Height="36"
+Style="{StaticResource ActionButton}"
+Click="btnSearchDevices_Click"/>
+                        </Grid>
 
                         <DataGrid x:Name="dgFilteredDevices"
-Height="180"
+Height="220"
 AutoGenerateColumns="True"
-IsReadOnly="True"/>
+IsReadOnly="True"
+SelectionMode="Single"/>
                     </StackPanel>
                 </Border>
+
 
                 <!-- Manual commands -->
                 <Border Background="White" CornerRadius="10"

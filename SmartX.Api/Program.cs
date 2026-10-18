@@ -715,6 +715,73 @@ Results.Ok(new
 }));
 
 
+app.MapGet("/api/command-centre/devices",
+(DeviceHealthService healthService,
+DeviceSimulationService simulationService,
+ActiveAlertService alertService,
+string? search,
+string? category,
+string? alertState) =>
+{
+    simulationService.UpdateSimulatedConnectivity();
+
+    var activeAlerts = alertService.GetActiveAlerts();
+
+    var devices = DeviceStore.Devices.Select(device =>
+    {
+        var health = healthService.CalculateHealth(device.LastSeen);
+
+        bool hasActiveAlert = activeAlerts.Any(alert =>
+        alert.StartsWith(
+        device.DeviceId + "|",
+        StringComparison.OrdinalIgnoreCase));
+
+        return new
+        {
+            device.DeviceId,
+            device.MacAddress,
+            device.DeploymentLocation,
+            Category = device.Category.ToString(),
+            Health = health.ToString(),
+            HasActiveAlert = hasActiveAlert
+        };
+    }).ToList();
+
+    var filtered = devices.AsEnumerable();
+
+    if (!string.IsNullOrWhiteSpace(search))
+    {
+        filtered = filtered.Where(d =>
+        d.DeviceId.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+        d.MacAddress.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+        d.DeploymentLocation.Contains(search, StringComparison.OrdinalIgnoreCase));
+    }
+
+    if (!string.IsNullOrWhiteSpace(category) &&
+    !category.Equals("All", StringComparison.OrdinalIgnoreCase))
+    {
+        filtered = filtered.Where(d =>
+        d.Category.Equals(category, StringComparison.OrdinalIgnoreCase));
+    }
+
+    if (!string.IsNullOrWhiteSpace(alertState) &&
+    !alertState.Equals("All", StringComparison.OrdinalIgnoreCase))
+    {
+        filtered = filtered.Where(d =>
+        alertState.Equals("Active", StringComparison.OrdinalIgnoreCase)
+        ? d.HasActiveAlert
+        : alertState.Equals("Disconnected", StringComparison.OrdinalIgnoreCase)
+        ? d.Health.Equals("Disconnected", StringComparison.OrdinalIgnoreCase)
+        : alertState.Equals("Normal", StringComparison.OrdinalIgnoreCase)
+        ? !d.HasActiveAlert &&
+        !d.Health.Equals("Disconnected", StringComparison.OrdinalIgnoreCase)
+        : true);
+    }
+
+    return Results.Ok(filtered.ToList());
+});
+
+
 
 
 app.Run();

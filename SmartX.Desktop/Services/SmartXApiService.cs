@@ -112,8 +112,20 @@ namespace SmartX.Desktop.Services
             );
         }
 
+        public async Task<List<CommandCentreDeviceDto>> GetCommandCentreDevicesAsync(
+        string search = "",
+        string category = "All",
+        string alertState = "All")
+        {
+            string url =
+            "api/command-centre/devices" +
+            $"?search={Uri.EscapeDataString(search)}" +
+            $"&category={Uri.EscapeDataString(category)}" +
+            $"&alertState={Uri.EscapeDataString(alertState)}";
 
-
+            return await _httpClient.GetFromJsonAsync<List<CommandCentreDeviceDto>>(url)
+            ?? new List<CommandCentreDeviceDto>();
+        }
 
 
     }
