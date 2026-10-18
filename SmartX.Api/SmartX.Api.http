@@ -245,6 +245,47 @@ GET https://localhost:7031/api/queue/history
 
 
 
+### View active alerts
+GET https://localhost:7031/api/alerts/active
+
+### Send critical temperature reading
+POST https://localhost:7031/api/queue/enqueue
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0001",
+"metric": "Temperature",
+"value": 58.7,
+"unit": "C"
+}
+
+### Check specific temperature alert
+GET https://localhost:7031/api/alerts/active/ESP32-0001/Temperature
+
+### Send normal temperature reading
+POST https://localhost:7031/api/queue/enqueue
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0001",
+"metric": "Temperature",
+"value": 24.5,
+"unit": "C"
+}
+
+### Simulate device disconnect
+POST https://localhost:7031/api/alerts/disconnect/ESP32-0003
+
+### Simulate device reconnect
+POST https://localhost:7031/api/alerts/reconnect/ESP32-0003
+
+
+
+
+
+
+
+
 
 
 

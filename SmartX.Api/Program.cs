@@ -16,6 +16,7 @@ builder.Services.AddSingleton<AnomalyDetectionService>();
 builder.Services.AddSingleton<TelemetryQueueService>();
 builder.Services.AddSingleton<DeviceLookupService>();
 builder.Services.AddSingleton<TelemetryHistoryService>();
+builder.Services.AddSingleton<ActiveAlertService>();
 
 
 
@@ -533,7 +534,7 @@ app.MapGet(
 
 
 app.MapPost("/api/queue/enqueue",
-(QueuedTelemetry message, TelemetryQueueService queueService, DeviceLookupService deviceLookup, TelemetryHistoryService historyService) =>
+(QueuedTelemetry message, TelemetryQueueService queueService, DeviceLookupService deviceLookup, TelemetryHistoryService historyService, ActiveAlertService alertService) =>
 {
     if (string.IsNullOrWhiteSpace(message.DeviceId) ||
     string.IsNullOrWhiteSpace(message.Metric) ||
@@ -557,6 +558,9 @@ app.MapPost("/api/queue/enqueue",
     queueService.Enqueue(message);
     deviceLookup.UpdateDevice(message);
     historyService.AddReading(message);
+    alertService.UpdateFromTelemetry(message);
+
+
 
 
     return Results.Ok(new
@@ -604,6 +608,61 @@ app.MapGet("/api/queue/devices/{deviceId}",
 app.MapGet("/api/queue/history",
 (TelemetryHistoryService historyService) =>
 Results.Ok(historyService.GetHistory()));
+
+
+
+
+
+app.MapGet("/api/alerts/active",
+(ActiveAlertService alertService) =>
+{
+    return Results.Ok(new
+    {
+        TotalActiveAlerts = alertService.GetActiveAlertCount(),
+        Alerts = alertService.GetActiveAlerts()
+    });
+});
+
+app.MapGet("/api/alerts/active/{deviceId}/{metric}",
+(string deviceId, string metric, ActiveAlertService alertService) =>
+{
+    return Results.Ok(new
+    {
+        DeviceId = deviceId,
+        Metric = metric,
+        IsActive = alertService.ContainsAlert(deviceId, metric)
+    });
+});
+
+// Simulated device disconnect event.
+app.MapPost("/api/alerts/disconnect/{deviceId}",
+(string deviceId, ActiveAlertService alertService) =>
+{
+    bool added = alertService.AddAlert(deviceId, "Disconnected");
+
+    return Results.Ok(new
+    {
+        DeviceId = deviceId,
+        Alert = "Disconnected",
+        Added = added
+    });
+});
+
+// Simulated device reconnection event.
+app.MapPost("/api/alerts/reconnect/{deviceId}",
+(string deviceId, ActiveAlertService alertService) =>
+{
+    bool removed = alertService.RemoveAlert(deviceId, "Disconnected");
+
+    return Results.Ok(new
+    {
+        DeviceId = deviceId,
+        Alert = "Disconnected",
+        Removed = removed
+    });
+});
+
+
 
 
 app.Run();
