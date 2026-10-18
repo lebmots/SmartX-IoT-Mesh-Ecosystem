@@ -327,6 +327,25 @@ POST https://localhost:7031/api/commands/undo
 
 
 
+### Check live queue status
+GET https://localhost:7031/api/queue/status
+
+### View simulated device readings
+GET https://localhost:7031/api/queue/devices
+
+### View sorted telemetry history
+GET https://localhost:7031/api/queue/history
+
+### View active alerts from simulated devices
+GET https://localhost:7031/api/alerts/active
+
+### Manually process next queued message
+POST https://localhost:7031/api/queue/process-next
+
+
+
+
+
 
 
 

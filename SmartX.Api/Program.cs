@@ -18,10 +18,8 @@ builder.Services.AddSingleton<DeviceLookupService>();
 builder.Services.AddSingleton<TelemetryHistoryService>();
 builder.Services.AddSingleton<ActiveAlertService>();
 builder.Services.AddSingleton<DeviceCommandService>();
-
-
-
-
+builder.Services.AddHttpClient();
+builder.Services.AddHostedService<Esp32HttpSimulatorService>();
 
 
 var app = builder.Build();
