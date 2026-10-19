@@ -127,6 +127,70 @@ namespace SmartX.Desktop.Services
             ?? new List<CommandCentreDeviceDto>();
         }
 
+        public async Task<QueueStatusDto> GetQueueStatusAsync()
+        {
+            return await _httpClient.GetFromJsonAsync<QueueStatusDto>(
+            "api/queue/status") ?? new QueueStatusDto();
+        }
+
+        public async Task<List<ProcessedTelemetryDto>> GetProcessedTelemetryAsync()
+        {
+            return await _httpClient.GetFromJsonAsync<List<ProcessedTelemetryDto>>(
+            "api/queue/processed") ?? new List<ProcessedTelemetryDto>();
+        }
+
+        public async Task<ActiveAlertsDto> GetActiveAlertsAsync()
+        {
+            return await _httpClient.GetFromJsonAsync<ActiveAlertsDto>(
+            "api/alerts/active") ?? new ActiveAlertsDto();
+        }
+
+
+        public async Task<DeviceCommandRecordDto> ExecuteDeviceCommandAsync(
+        DeviceCommandRequestDto request)
+        {
+            using var response = await _httpClient.PostAsJsonAsync(
+            "api/commands/execute",
+            request);
+
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content
+            .ReadFromJsonAsync<DeviceCommandRecordDto>()
+            ?? throw new InvalidOperationException(
+            "The API returned an empty command response.");
+        }
+
+        public async Task<DeviceCommandRecordDto> UndoLastCommandAsync()
+        {
+            using var response = await _httpClient.PostAsync(
+            "api/commands/undo",
+            null);
+
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content
+            .ReadFromJsonAsync<DeviceCommandRecordDto>()
+            ?? throw new InvalidOperationException(
+            "The API returned an empty undo response.");
+        }
+
+        public async Task<List<DeviceCommandRecordDto>> GetCommandHistoryAsync()
+        {
+            return await _httpClient
+            .GetFromJsonAsync<List<DeviceCommandRecordDto>>(
+            "api/commands/history")
+            ?? new List<DeviceCommandRecordDto>();
+        }
+
+        public async Task<RecommendationsResponseDto> GetRecommendationsAsync()
+        {
+            return await _httpClient
+            .GetFromJsonAsync<RecommendationsResponseDto>(
+            "api/recommendations")
+            ?? new RecommendationsResponseDto();
+        }
+
 
     }
 }

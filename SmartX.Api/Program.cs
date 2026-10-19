@@ -22,6 +22,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddHostedService<Esp32HttpSimulatorService>();
 builder.Services.AddSingleton<RecommendationEngineService>();
 builder.Services.AddSingleton<OperatorActivityService>();
+builder.Services.AddHostedService<TelemetryQueueProcessorService>();
 
 
 var app = builder.Build();

@@ -212,27 +212,32 @@ Margin="0,8,0,15"/>
                             <Button x:Name="btnPumpOn"
 Content="Pump ON"
 Style="{StaticResource ActionButton}"
-IsEnabled="False"/>
+IsEnabled="True"
+Click="btnPumpOn_Click"/>
 
                             <Button x:Name="btnPumpOff"
 Content="Pump OFF"
 Style="{StaticResource ActionButton}"
-IsEnabled="False"/>
+IsEnabled="True"
+Click="btnPumpOff_Click"/>
 
                             <Button x:Name="btnRelayOn"
 Content="Relay ON"
 Style="{StaticResource ActionButton}"
-IsEnabled="False"/>
+IsEnabled="True"
+Click="btnRelayOn_Click"/>
 
                             <Button x:Name="btnRelayOff"
 Content="Relay OFF"
 Style="{StaticResource ActionButton}"
-IsEnabled="False"/>
+IsEnabled="True"
+Click="btnRelayOff_Click"/>
 
                             <Button x:Name="btnUndo"
 Content="Undo Last Command"
 Style="{StaticResource ActionButton}"
-IsEnabled="False"/>
+IsEnabled="True"
+Click="btnUndo_Click"/>
                         </WrapPanel>
                     </StackPanel>
                 </Border>
