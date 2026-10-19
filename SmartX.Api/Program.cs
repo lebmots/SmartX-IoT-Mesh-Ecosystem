@@ -830,6 +830,64 @@ app.MapGet("/api/recommendations",
     });
 });
 
+app.MapGet("/api/queue/priority-test", () =>
+{
+    var testQueue = new TelemetryQueueService();
+
+    // Add normal telemetry first.
+    testQueue.Enqueue(new QueuedTelemetry
+    {
+        DeviceId = "TEST-001",
+        Metric = "Temperature",
+        Value = 25,
+        Unit = "C",
+        IsCritical = false
+    });
+
+    testQueue.Enqueue(new QueuedTelemetry
+    {
+        DeviceId = "TEST-002",
+        Metric = "Temperature",
+        Value = 28,
+        Unit = "C",
+        IsCritical = false
+    });
+
+    // Add critical telemetry last.
+    testQueue.Enqueue(new QueuedTelemetry
+    {
+        DeviceId = "TEST-003",
+        Metric = "Temperature",
+        Value = 60,
+        Unit = "C",
+        IsCritical = true
+    });
+
+    var results = new List<object>();
+
+    for (int i = 0; i < 3; i++)
+    {
+        var message = testQueue.ProcessNext();
+
+        if (message != null)
+        {
+            results.Add(new
+            {
+                message.DeviceId,
+                message.IsCritical
+            });
+        }
+    }
+
+    return Results.Ok(new
+    {
+        Test = "Priority Queue Processing",
+        ExpectedFirstDevice = "TEST-003",
+        ProcessingOrder = results
+    });
+});
+
+
 
 app.Run();
 

@@ -367,6 +367,10 @@ GET https://localhost:7031/api/recommendations
 
 
 
+### Test critical telemetry priority
+GET https://localhost:7031/api/queue/priority-test
+
+
 
 
 
