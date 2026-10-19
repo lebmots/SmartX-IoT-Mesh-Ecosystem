@@ -373,6 +373,18 @@ GET https://localhost:7031/api/queue/priority-test
 
 
 
+### Count registered devices
+GET https://localhost:7031/api/registered-devices/count
+
+### Find registered device using Dictionary
+GET https://localhost:7031/api/registered-devices/ESP32-0001
+
+### Test missing device
+GET https://localhost:7031/api/registered-devices/UNKNOWN-999
+
+
+
+
 
 
 

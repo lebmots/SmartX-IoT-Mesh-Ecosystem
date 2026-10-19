@@ -23,7 +23,7 @@ builder.Services.AddHostedService<Esp32HttpSimulatorService>();
 builder.Services.AddSingleton<RecommendationEngineService>();
 builder.Services.AddSingleton<OperatorActivityService>();
 builder.Services.AddHostedService<TelemetryQueueProcessorService>();
-
+builder.Services.AddSingleton<RegisteredDeviceLookupService>();
 
 var app = builder.Build();
 
@@ -411,7 +411,8 @@ app.MapPost(
 "/api/devices/register",
 (
 DeviceRegistrationRequest request,
-DeviceRegistrationService registrationService
+DeviceRegistrationService registrationService,
+RegisteredDeviceLookupService lookupService
 ) =>
 {
     bool registered =
@@ -427,6 +428,16 @@ DeviceRegistrationService registrationService
             error = message
         });
     }
+
+
+    if (device == null)
+    {
+        return Results.Problem(
+        "Registration succeeded but no device was returned.");
+    }
+
+    lookupService.RegisterDevice(device);
+
 
     return Results.Created(
     $"/api/devices/{device!.Id}",
@@ -887,6 +898,26 @@ app.MapGet("/api/queue/priority-test", () =>
     });
 });
 
+
+
+app.MapGet("/api/registered-devices/count",
+(RegisteredDeviceLookupService lookupService) =>
+{
+    return Results.Ok(new
+    {
+        RegisteredDevices = lookupService.GetRegisteredCount()
+    });
+});
+
+app.MapGet("/api/registered-devices/{deviceId}",
+(string deviceId, RegisteredDeviceLookupService lookupService) =>
+{
+    var device = lookupService.FindDevice(deviceId);
+
+    return device == null
+    ? Results.NotFound("Device not registered.")
+    : Results.Ok(device);
+});
 
 
 app.Run();
