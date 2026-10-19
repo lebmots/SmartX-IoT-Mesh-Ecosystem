@@ -1,5 +1,5 @@
 Smart-X IoT Mesh Ecosystem
-Demo: https://www.youtube.com/watch?v=8jRu0zl8MOw
+Demo Part 1: https://www.youtube.com/watch?v=8jRu0zl8MOw
 
 Overview
 
@@ -263,7 +263,15 @@ Microsoft (2026) Arrays – C# reference. Microsoft Learn. Available at: https:/
 
 Microsoft (2026) Operator overloading – C# reference. Microsoft Learn. Available at: https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/operator-overloading (Accessed: 13 September 2026).
 
+Microsoft (2026) PriorityQueue<TElement, TPriority> class. Microsoft Learn. Available at: https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.priorityqueue-2 (Accessed: 19 October 2026).
 
+Microsoft (2026) Dictionary<TKey, TValue> class. Microsoft Learn. Available at: https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2 (Accessed: 19 October 2026).
+
+Microsoft (2026) SortedDictionary<TKey, TValue> class. Microsoft Learn. Available at: https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.sorteddictionary-2 (Accessed: 19 October 2026).
+
+Microsoft (2026) HashSet<T> class. Microsoft Learn. Available at: https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.hashset-1 (Accessed: 19 October 2026).
+
+Microsoft (2026) BackgroundService class. Microsoft Learn. Available at: https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice (Accessed: 19 October 2026).
 
 
 
