@@ -344,6 +344,28 @@ POST https://localhost:7031/api/queue/process-next
 
 
 
+### Search for a device
+GET https://localhost:7031/api/command-centre/devices?search=ESP32-0001
+
+### Execute a pump command
+POST https://localhost:7031/api/commands/execute
+Content-Type: application/json
+
+{
+"deviceId": "ESP32-0001",
+"commandType": "Pump",
+"turnOn": true
+}
+
+### View operator activity
+GET https://localhost:7031/api/operator-activity
+
+
+
+### Get Smart-X predictive recommendations
+GET https://localhost:7031/api/recommendations
+
+
 
 
 

@@ -20,6 +20,8 @@ builder.Services.AddSingleton<ActiveAlertService>();
 builder.Services.AddSingleton<DeviceCommandService>();
 builder.Services.AddHttpClient();
 builder.Services.AddHostedService<Esp32HttpSimulatorService>();
+builder.Services.AddSingleton<RecommendationEngineService>();
+builder.Services.AddSingleton<OperatorActivityService>();
 
 
 var app = builder.Build();
@@ -668,7 +670,7 @@ app.MapPost("/api/alerts/reconnect/{deviceId}",
 
 
 app.MapPost("/api/commands/execute",
-(DeviceCommandRequest request, DeviceCommandService commandService) =>
+(DeviceCommandRequest request, DeviceCommandService commandService, OperatorActivityService activityService) =>
 {
     if (string.IsNullOrWhiteSpace(request.DeviceId) ||
     string.IsNullOrWhiteSpace(request.CommandType))
@@ -685,6 +687,11 @@ app.MapPost("/api/commands/execute",
     }
 
     var record = commandService.ExecuteCommand(request);
+
+
+    activityService.RecordCommand(
+    record.DeviceId,
+    record.CommandType);
 
     return Results.Ok(record);
 });
@@ -719,10 +726,26 @@ app.MapGet("/api/command-centre/devices",
 (DeviceHealthService healthService,
 DeviceSimulationService simulationService,
 ActiveAlertService alertService,
+OperatorActivityService activityService,
 string? search,
 string? category,
 string? alertState) =>
 {
+
+    if (!string.IsNullOrWhiteSpace(search))
+    {
+        string searchedDevice = search.Trim();
+
+        if (DeviceStore.Devices.Any(d =>
+        d.DeviceId.Equals(
+        searchedDevice,
+        StringComparison.OrdinalIgnoreCase)))
+        {
+            activityService.RecordSearch(searchedDevice);
+        }
+    }
+
+
     simulationService.UpdateSimulatedConnectivity();
 
     var activeAlerts = alertService.GetActiveAlerts();
@@ -782,6 +805,29 @@ string? alertState) =>
 });
 
 
+app.MapGet("/api/operator-activity",
+(OperatorActivityService activityService) =>
+{
+    return Results.Ok(new
+    {
+        DeviceSearches = activityService.GetSearchCounts(),
+        ManualCommands = activityService.GetCommandCounts()
+    });
+});
+
+
+app.MapGet("/api/recommendations",
+(RecommendationEngineService recommendationService) =>
+{
+    var recommendations =
+    recommendationService.GenerateRecommendations();
+
+    return Results.Ok(new
+    {
+        TotalRecommendations = recommendations.Count,
+        Suggestions = recommendations
+    });
+});
 
 
 app.Run();
