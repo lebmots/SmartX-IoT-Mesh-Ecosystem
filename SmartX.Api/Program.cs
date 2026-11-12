@@ -983,6 +983,25 @@ app.MapGet("/api/mesh/bfs/{startNodeId}",
     graphService.TraverseBfs(startNodeId));
 });
 
+
+app.MapPut("/api/mesh/nodes/{nodeId}/status",
+(string nodeId, bool isOnline, MeshGraphService graphService) =>
+{
+    bool updated = graphService.SetNodeOnlineStatus(
+    nodeId, isOnline);
+
+    if (!updated)
+        return Results.NotFound("Mesh node not found.");
+
+    return Results.Ok(new
+    {
+        nodeId,
+        isOnline,
+        message = "Node status updated successfully."
+    });
+});
+
+
 app.Run();
 
 

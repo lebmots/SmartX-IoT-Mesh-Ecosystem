@@ -102,6 +102,17 @@ namespace SmartX.Api.Services
             AddConnection("ESP32-0003", "ESP32-0004", 3);
         }
 
+        public bool SetNodeOnlineStatus(string nodeId, bool isOnline)
+        {
+            lock (_lock)
+            {
+                if (!_nodes.TryGetValue(nodeId, out var node))
+                    return false;
+
+                node.IsOnline = isOnline;
+                return true;
+            }
+        }
 
         public object TraverseBfs(string startNodeId)
         {
