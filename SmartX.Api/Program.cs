@@ -24,6 +24,7 @@ builder.Services.AddSingleton<RecommendationEngineService>();
 builder.Services.AddSingleton<OperatorActivityService>();
 builder.Services.AddHostedService<TelemetryQueueProcessorService>();
 builder.Services.AddSingleton<RegisteredDeviceLookupService>();
+builder.Services.AddSingleton<AvlTelemetryTree>();
 
 var app = builder.Build();
 
@@ -549,7 +550,7 @@ app.MapGet(
 
 
 app.MapPost("/api/queue/enqueue",
-(QueuedTelemetry message, TelemetryQueueService queueService, DeviceLookupService deviceLookup, TelemetryHistoryService historyService, ActiveAlertService alertService) =>
+(QueuedTelemetry message, TelemetryQueueService queueService, DeviceLookupService deviceLookup, TelemetryHistoryService historyService, ActiveAlertService alertService, AvlTelemetryTree avlTree) =>
 {
     if (string.IsNullOrWhiteSpace(message.DeviceId) ||
     string.IsNullOrWhiteSpace(message.Metric) ||
@@ -573,8 +574,9 @@ app.MapPost("/api/queue/enqueue",
     queueService.Enqueue(message);
     deviceLookup.UpdateDevice(message);
     historyService.AddReading(message);
+    avlTree.Add(message);
     alertService.UpdateFromTelemetry(message);
-
+    
 
 
 
@@ -917,6 +919,48 @@ app.MapGet("/api/registered-devices/{deviceId}",
     return device == null
     ? Results.NotFound("Device not registered.")
     : Results.Ok(device);
+});
+
+
+// PART 3: AVL Tree historical telemetry range query
+app.MapGet("/api/avl/history",
+(
+string deviceId,
+DateTime start,
+DateTime end,
+AvlTelemetryTree avlTree
+) =>
+{
+    if (string.IsNullOrWhiteSpace(deviceId))
+    {
+        return Results.BadRequest(
+        "A device ID is required.");
+    }
+
+    if (start > end)
+    {
+        return Results.BadRequest(
+        "Start date must be before end date.");
+    }
+
+    var readings = avlTree
+    .SearchRange(start.ToUniversalTime(),
+    end.ToUniversalTime())
+    .Where(r => string.Equals(
+    r.DeviceId,
+    deviceId,
+    StringComparison.OrdinalIgnoreCase))
+    .OrderBy(r => r.ReceivedAt)
+    .ToList();
+
+    return Results.Ok(new
+    {
+        DeviceId = deviceId,
+        Start = start,
+        End = end,
+        TotalReadings = readings.Count,
+        Readings = readings
+    });
 });
 
 
