@@ -990,6 +990,16 @@ app.MapGet("/api/mesh/mst/{startNodeId}",
     meshService.CalculateMinimumSpanningTree(startNodeId));
 });
 
+app.MapGet("/api/mesh/shortest-path/{startNodeId}/{destinationNodeId}",
+(string startNodeId,
+string destinationNodeId,
+MeshGraphService meshService) =>
+{
+    return Results.Ok(
+    meshService.FindShortestPath(
+    startNodeId,
+    destinationNodeId));
+});
 
 app.MapPut("/api/mesh/nodes/{nodeId}/status",
 (string nodeId, bool isOnline, MeshGraphService graphService) =>

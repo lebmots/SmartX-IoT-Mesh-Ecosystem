@@ -279,6 +279,131 @@ namespace SmartX.Api.Services
                 };
             }
         }
+        public object FindShortestPath(
+string startNodeId,
+string destinationNodeId)
+        {
+            lock (_lock)
+            {
+                if (!_nodes.ContainsKey(startNodeId) ||
+                !_nodes.ContainsKey(destinationNodeId))
+                {
+                    return new
+                    {
+                        Success = false,
+                        Message = "Starting or destination node not found.",
+                        Path = new List<string>(),
+                        TotalCost = 0.0,
+                        HopCount = 0
+                    };
+                }
+
+                if (!_nodes[startNodeId].IsOnline ||
+                !_nodes[destinationNodeId].IsOnline)
+                {
+                    return new
+                    {
+                        Success = false,
+                        Message = "Starting or destination node is offline.",
+                        Path = new List<string>(),
+                        TotalCost = 0.0,
+                        HopCount = 0
+                    };
+                }
+
+                var distances = new Dictionary<string, double>(
+                StringComparer.OrdinalIgnoreCase);
+
+                var previous = new Dictionary<string, string>(
+                StringComparer.OrdinalIgnoreCase);
+
+                var visited = new HashSet<string>(
+                StringComparer.OrdinalIgnoreCase);
+
+                var priorityQueue =
+                new PriorityQueue<string, double>();
+
+                foreach (var nodeId in _nodes.Keys)
+                    distances[nodeId] = double.PositiveInfinity;
+
+                distances[startNodeId] = 0;
+                priorityQueue.Enqueue(startNodeId, 0);
+
+                while (priorityQueue.Count > 0)
+                {
+                    string current = priorityQueue.Dequeue();
+
+                    if (!visited.Add(current))
+                        continue;
+
+                    if (string.Equals(
+                    current,
+                    destinationNodeId,
+                    StringComparison.OrdinalIgnoreCase))
+                    {
+                        break;
+                    }
+
+                    foreach (var edge in _adjacency[current])
+                    {
+                        string neighbour = edge.DestinationId;
+
+                        if (!_nodes[neighbour].IsOnline ||
+                        visited.Contains(neighbour))
+                            continue;
+
+                        double newDistance =
+                        distances[current] + edge.Weight;
+
+                        if (newDistance < distances[neighbour])
+                        {
+                            distances[neighbour] = newDistance;
+                            previous[neighbour] = current;
+
+                            priorityQueue.Enqueue(
+                            neighbour,
+                            newDistance);
+                        }
+                    }
+                }
+
+                if (double.IsPositiveInfinity(
+                distances[destinationNodeId]))
+                {
+                    return new
+                    {
+                        Success = false,
+                        Message = "No available route to destination.",
+                        Path = new List<string>(),
+                        TotalCost = 0.0,
+                        HopCount = 0
+                    };
+                }
+
+                var path = new List<string>();
+                string step = destinationNodeId;
+
+                path.Add(step);
+
+                while (previous.TryGetValue(step, out var parent))
+                {
+                    step = parent;
+                    path.Add(step);
+                }
+
+                path.Reverse();
+
+                return new
+                {
+                    Success = true,
+                    Message = "Shortest path calculated successfully.",
+                    Path = path,
+                    TotalCost = distances[destinationNodeId],
+                    HopCount = path.Count - 1
+                };
+            }
+        }
+
 
 
         public object GetTopology()
