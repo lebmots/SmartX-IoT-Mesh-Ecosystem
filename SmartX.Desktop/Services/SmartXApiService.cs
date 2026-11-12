@@ -17,7 +17,7 @@ namespace SmartX.Desktop.Services
         {
             _httpClient = new HttpClient
             {
-                BaseAddress = new Uri("https://localhost:7031/")
+                BaseAddress = new Uri("http://localhost:5016/")
             };
         }
 

@@ -19,20 +19,27 @@
             using var timer = new PeriodicTimer(
             TimeSpan.FromSeconds(1));
 
-            while (await timer.WaitForNextTickAsync(stoppingToken))
+            try
             {
-                var message = _queueService.ProcessNext();
-
-                if (message != null)
+                while (await timer.WaitForNextTickAsync(stoppingToken))
                 {
-                    _logger.LogInformation(
-                    "Processed {Metric} telemetry from {DeviceId}",
-                    message.Metric,
-                    message.DeviceId);
+                    var message = _queueService.ProcessNext();
+
+                    if (message != null)
+                    {
+                        _logger.LogInformation(
+                        "Processed {Metric} telemetry from {DeviceId}",
+                        message.Metric,
+                        message.DeviceId);
+                    }
                 }
+            }
+            catch (OperationCanceledException)
+            when (stoppingToken.IsCancellationRequested)
+            {
+                // Normal shutdown: the background timer was cancelled.
             }
         }
     }
 }
-
 

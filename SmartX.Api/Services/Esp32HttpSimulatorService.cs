@@ -27,7 +27,7 @@ namespace SmartX.Api.Services
 
             string apiBaseUrl =
             _configuration["Simulator:ApiBaseUrl"]
-            ?? "https://localhost:7031/";
+            ?? "http://localhost:5016/";
 
             var client = _httpClientFactory.CreateClient();
             client.BaseAddress = new Uri(apiBaseUrl);
