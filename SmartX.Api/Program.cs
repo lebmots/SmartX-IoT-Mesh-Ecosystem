@@ -25,8 +25,14 @@ builder.Services.AddSingleton<OperatorActivityService>();
 builder.Services.AddHostedService<TelemetryQueueProcessorService>();
 builder.Services.AddSingleton<RegisteredDeviceLookupService>();
 builder.Services.AddSingleton<AvlTelemetryTree>();
+builder.Services.AddSingleton<MeshGraphService>();
 
 var app = builder.Build();
+
+var meshGraph = app.Services
+.GetRequiredService<MeshGraphService>();
+
+meshGraph.SeedDemoNetwork();
 
 TelemetrySeedData.Seed();
 var mockTelemetryService =
@@ -961,6 +967,12 @@ AvlTelemetryTree avlTree
         TotalReadings = readings.Count,
         Readings = readings
     });
+});
+
+app.MapGet("/api/mesh/topology",
+(MeshGraphService graphService) =>
+{
+    return Results.Ok(graphService.GetTopology());
 });
 
 
