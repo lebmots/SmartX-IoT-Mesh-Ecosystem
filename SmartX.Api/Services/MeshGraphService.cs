@@ -191,6 +191,95 @@ namespace SmartX.Api.Services
             }
         }
 
+        public object CalculateMinimumSpanningTree(string startNodeId)
+        {
+            lock (_lock)
+            {
+                if (!_nodes.TryGetValue(startNodeId, out var startNode))
+                {
+                    return new
+                    {
+                        Success = false,
+                        Message = "Starting node not found.",
+                        SelectedConnections = new List<MeshEdge>(),
+                        TotalWeight = 0.0,
+                        VisitedNodes = new List<string>(),
+                        UnreachableNodes = new List<string>()
+                    };
+                }
+
+                if (!startNode.IsOnline)
+                {
+                    return new
+                    {
+                        Success = false,
+                        Message = "Starting node is offline.",
+                        SelectedConnections = new List<MeshEdge>(),
+                        TotalWeight = 0.0,
+                        VisitedNodes = new List<string>(),
+                        UnreachableNodes = _nodes.Keys.ToList()
+                    };
+                }
+
+                var visited = new HashSet<string>(
+                StringComparer.OrdinalIgnoreCase);
+
+                var selectedConnections = new List<MeshEdge>();
+
+                var priorityQueue = new PriorityQueue<MeshEdge, double>();
+
+                visited.Add(startNodeId);
+
+                foreach (var edge in _adjacency[startNodeId])
+                {
+                    if (_nodes[edge.DestinationId].IsOnline)
+                        priorityQueue.Enqueue(edge, edge.Weight);
+                }
+
+                double totalWeight = 0;
+
+                while (priorityQueue.Count > 0)
+                {
+                    var edge = priorityQueue.Dequeue();
+
+                    if (visited.Contains(edge.DestinationId))
+                        continue;
+
+                    if (!_nodes[edge.DestinationId].IsOnline)
+                        continue;
+
+                    visited.Add(edge.DestinationId);
+                    selectedConnections.Add(edge);
+                    totalWeight += edge.Weight;
+
+                    foreach (var nextEdge in _adjacency[edge.DestinationId])
+                    {
+                        if (!visited.Contains(nextEdge.DestinationId) &&
+                        _nodes[nextEdge.DestinationId].IsOnline)
+                        {
+                            priorityQueue.Enqueue(
+                            nextEdge,
+                            nextEdge.Weight);
+                        }
+                    }
+                }
+
+                var unreachable = _nodes.Keys
+                .Where(id => !visited.Contains(id))
+                .ToList();
+
+                return new
+                {
+                    Success = true,
+                    Message = "Prim's MST calculation completed.",
+                    SelectedConnections = selectedConnections,
+                    TotalWeight = totalWeight,
+                    VisitedNodes = visited.ToList(),
+                    UnreachableNodes = unreachable
+                };
+            }
+        }
+
 
         public object GetTopology()
         {

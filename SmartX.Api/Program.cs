@@ -983,6 +983,13 @@ app.MapGet("/api/mesh/bfs/{startNodeId}",
     graphService.TraverseBfs(startNodeId));
 });
 
+app.MapGet("/api/mesh/mst/{startNodeId}",
+(string startNodeId, MeshGraphService meshService) =>
+{
+    return Results.Ok(
+    meshService.CalculateMinimumSpanningTree(startNodeId));
+});
+
 
 app.MapPut("/api/mesh/nodes/{nodeId}/status",
 (string nodeId, bool isOnline, MeshGraphService graphService) =>
