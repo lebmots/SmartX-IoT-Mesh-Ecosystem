@@ -976,6 +976,13 @@ app.MapGet("/api/mesh/topology",
 });
 
 
+app.MapGet("/api/mesh/bfs/{startNodeId}",
+(string startNodeId, MeshGraphService graphService) =>
+{
+    return Results.Ok(
+    graphService.TraverseBfs(startNodeId));
+});
+
 app.Run();
 
 

@@ -103,8 +103,82 @@ namespace SmartX.Api.Services
         }
 
 
+        public object TraverseBfs(string startNodeId)
+        {
+            lock (_lock)
+            {
+                if (!_nodes.ContainsKey(startNodeId))
+                {
+                    return new
+                    {
+                        Success = false,
+                        Message = "Starting node not found.",
+                        VisitedNodes = new List<string>(),
+                        HopCounts = new Dictionary<string, int>(),
+                        UnreachableNodes = new List<string>()
+                    };
+                }
 
+                var visited = new HashSet<string>(
+                StringComparer.OrdinalIgnoreCase);
 
+                var queue = new Queue<string>();
+
+                var hopCounts = new Dictionary<string, int>(
+                StringComparer.OrdinalIgnoreCase);
+
+                var visitOrder = new List<string>();
+
+                if (!_nodes[startNodeId].IsOnline)
+                {
+                    return new
+                    {
+                        Success = false,
+                        Message = "Starting node is offline.",
+                        VisitedNodes = visitOrder,
+                        HopCounts = hopCounts,
+                        UnreachableNodes = _nodes.Keys.ToList()
+                    };
+                }
+
+                visited.Add(startNodeId);
+                queue.Enqueue(startNodeId);
+                hopCounts[startNodeId] = 0;
+
+                while (queue.Count > 0)
+                {
+                    string current = queue.Dequeue();
+                    visitOrder.Add(current);
+
+                    foreach (var edge in _adjacency[current])
+                    {
+                        string neighbour = edge.DestinationId;
+
+                        if (_nodes[neighbour].IsOnline &&
+                        visited.Add(neighbour))
+                        {
+                            hopCounts[neighbour] =
+                            hopCounts[current] + 1;
+
+                            queue.Enqueue(neighbour);
+                        }
+                    }
+                }
+
+                var unreachable = _nodes.Keys
+                .Where(id => !visited.Contains(id))
+                .ToList();
+
+                return new
+                {
+                    Success = true,
+                    Message = "BFS traversal completed.",
+                    VisitedNodes = visitOrder,
+                    HopCounts = hopCounts,
+                    UnreachableNodes = unreachable
+                };
+            }
+        }
 
 
         public object GetTopology()
