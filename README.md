@@ -782,6 +782,746 @@ Development changes are committed incrementally to document the implementation o
 The repository commit history provides evidence of progressive development.
 
 
+
+## Smart-X IoT Mesh Ecosystem
+
+Part 3 — Network Topology, Mesh Routing and Historical Telemetry
+
+1. POE  overview
+
+Part 3 extends Smart-X with a network-topology dashboard and historical telemetry retrieval. The backend models a simulated ESP32 mesh network, calculates reachability and weighted routes, and exposes these operations through HTTP endpoints. The WPF client displays the nodes, weighted links, algorithm results, fault conditions and recovery behaviour. Historical timestamped readings can be retrieved by device and date range using an AVL-tree-backed service.
+
+The principal implemented features are:
+
+● A weighted, undirected graph of one gateway and four ESP32 nodes, represented using an adjacency list.
+
+● Breadth-First Search (BFS) to traverse reachable devices and report hop counts and unreachable nodes.
+
+● Prim’s Minimum Spanning Tree (MST) to select a minimum-total-weight set of links connecting reachable nodes.
+
+● Dijkstra’s shortest-path algorithm to calculate the least-cost route from the gateway to a selected destination (the current UI demonstrates ESP32-0004).
+
+● Fault simulation to disconnect/reconnect devices, redraw online/offline connections, recalculate a route and report degraded or restored network status.
+
+● AVL-tree-based historical telemetry range queries by device and timestamp, presented in a WPF data grid.
+
+How this fits the full application
+
+The main menu connects the three project areas: Sensor Data Ingestion & Telemetry (Part 1), Real-Time Command Stream & History (Part 2), and Network Topology & Mesh Routing (Part 3). The API is responsible for data structures and algorithms; the WPF application requests results and renders them.
+
+2. Architecture and data flow
+
+SmartX.Desktop (WPF)
+
+  ├─ Main dashboard
+
+  └─ MeshTopologyWindow
+
+       ├─ Graph visualisation (Canvas)
+
+       ├─ BFS / Prim / Dijkstra controls
+
+       ├─ Device disconnect / reconnect controls
+
+       ├─ Network recovery status
+
+       └─ Historical telemetry date-range search
+
+                  │ HTTP / JSON
+
+                  ▼
+
+SmartX.Api (ASP.NET Core)
+
+  ├─ MeshGraphService
+
+  │    ├─ Node dictionary and weighted adjacency lists
+
+  │    ├─ BFS traversal
+
+  │    ├─ Prim MST
+
+  │    ├─ Dijkstra shortest path
+
+  │    └─ Device online/offline state
+
+  └─ AVL historical telemetry service
+
+       └─ Timestamp-keyed, balanced search tree / range query
+
+Separation of concerns: The API owns the network state and calculates results; the desktop client consumes those results. The graph’s node positions in the WPF Canvas are fixed for the five seeded demonstration nodes, but node status, connections, weights and routes come from API responses.
+
+3. Data structure explanations 
+
+3.1 AVL Tree — historical timestamped telemetry
+
+What an AVL tree is
+
+An AVL tree is a self-balancing binary search tree (BST). Each node stores a key and associated value or values. For a timestamped telemetry index, the key is the reading’s timestamp; earlier timestamps are stored in the left subtree and later timestamps in the right subtree. The AVL invariant keeps the height difference between a node’s left and right subtrees within −1, 0 or +1.
+
+A normal BST can become severely unbalanced when readings arrive in chronological order: successive timestamps can create a long chain. The AVL tree counteracts this by performing left, right, left-right or right-left rotations after insertion when required. Its height therefore remains O(log n).
+
+Role in Smart-X
+
+Part 3 requires users to retrieve a particular sensor’s readings within a start and end time, such as moisture measurements during a specified period. The desktop Historical Sensor Telemetry section allows users to choose an ESP32 device and two dates, then calls:
+
+GET /api/avl/history?deviceId=ESP32-0001&start=2026-01-01T00:00:00&end=2026-12-31T23:59:59
+
+The API returns matching readings; the desktop displays ReceivedAt, DeviceId, Metric, Value and Unit. The query should prune irrelevant subtrees based on timestamp bounds, rather than scanning every stored reading.
+
+Why this improves efficiency
+
+|Operation                        |Unbalanced BST (worst case)|AVL tree    |
+|---------------------------------|--------------------------:|-----------:|
+|Insert one timestamp             |O(n)                       |O(log n)    |
+|Find one timestamp               |O(n)                       |O(log n)    |
+|Range query returning `k` matches|O(n)                       |O(log n + k)|
+|Extra storage                    |O(n)                       |O(n)        |
+
+Here, n is the number of indexed timestamps and k is the number of returned readings. The range-query bound assumes the tree is correctly balanced and the query prunes subtrees outside the interval. If readings share a timestamp, the index must accommodate duplicates, for example by storing multiple readings per timestamp or by using a composite key.
+
+Relevant C# example: AVL insertion and balancing
+
+The following is a simplified illustrative implementation of the AVL balancing mechanism. It demonstrates the core algorithm; it is not intended to replace the repository’s AVL service.
+
+public sealed class AvlNode
+
+{
+
+    public DateTime Timestamp { get; set; }
+
+    public int Height { get; set; } = 1;
+
+    public AvlNode? Left { get; set; }
+
+    public AvlNode? Right { get; set; }
+
+
+
+    public AvlNode(DateTime timestamp) => Timestamp = timestamp;
+
+}
+
+
+
+private static int Height(AvlNode? node) => node?.Height ?? 0;
+
+private static int Balance(AvlNode node) =>
+
+    Height(node.Left) - Height(node.Right);
+
+
+
+private static void RefreshHeight(AvlNode node) =>
+
+    node.Height = 1 + Math.Max(Height(node.Left), Height(node.Right));
+
+
+
+private static AvlNode RotateRight(AvlNode root)
+
+{
+
+    AvlNode pivot = root.Left!;
+
+    root.Left = pivot.Right;
+
+    pivot.Right = root;
+
+    RefreshHeight(root);
+
+    RefreshHeight(pivot);
+
+    return pivot;
+
+}
+
+
+
+private static AvlNode RotateLeft(AvlNode root)
+
+{
+
+    AvlNode pivot = root.Right!;
+
+    root.Right = pivot.Left;
+
+    pivot.Left = root;
+
+    RefreshHeight(root);
+
+    RefreshHeight(pivot);
+
+    return pivot;
+
+}
+
+
+
+private static AvlNode Insert(AvlNode? root, DateTime timestamp)
+
+{
+
+    if (root is null) return new AvlNode(timestamp);
+
+
+
+    if (timestamp < root.Timestamp)
+
+        root.Left = Insert(root.Left, timestamp);
+
+    else if (timestamp > root.Timestamp)
+
+        root.Right = Insert(root.Right, timestamp);
+
+    else
+
+        return root; // Illustration only: handle duplicate readings in production.
+
+
+
+    RefreshHeight(root);
+
+    int balance = Balance(root);
+
+
+
+    if (balance > 1 && timestamp < root.Left!.Timestamp)
+
+        return RotateRight(root); // Left-left
+
+
+
+    if (balance < -1 && timestamp > root.Right!.Timestamp)
+
+        return RotateLeft(root); // Right-right
+
+
+
+    if (balance > 1 && timestamp > root.Left!.Timestamp)
+
+    {
+
+        root.Left = RotateLeft(root.Left!);
+
+        return RotateRight(root); // Left-right
+
+    }
+
+
+
+    if (balance < -1 && timestamp < root.Right!.Timestamp)
+
+    {
+
+        root.Right = RotateRight(root.Right!);
+
+        return RotateLeft(root); // Right-left
+
+    }
+
+
+
+    return root;
+
+}
+
+Explanation: Height measures subtree depth. Balance detects whether a node has become too left-heavy or right-heavy. Rotations restore the AVL height constraint while preserving the BST timestamp ordering. This is especially relevant for continuously arriving IoT readings, which often have increasing timestamps.
+
+Relevant C# example: pruned date-range query
+
+private static void SearchRange(
+
+    AvlNode? node,
+
+    DateTime start,
+
+    DateTime end,
+
+    List<DateTime> matches)
+
+{
+
+    if (node is null) return;
+
+
+
+    if (start < node.Timestamp)
+
+        SearchRange(node.Left, start, end, matches);
+
+
+
+    if (node.Timestamp >= start && node.Timestamp <= end)
+
+        matches.Add(node.Timestamp);
+
+
+
+    if (node.Timestamp < end)
+
+        SearchRange(node.Right, start, end, matches);
+
+}
+
+Explanation: If a node’s timestamp is earlier than the requested start, its entire left subtree is also too early and can be skipped. Similarly, when a node is later than the end, its right subtree can be skipped. In the real telemetry index, the matching timestamp corresponds to one or more full sensor readings, not merely a DateTime value.
+
+Integration into the Network Topology feature
+
+The AVL tree complements the graph: the graph answers where a device is connected and how data could travel, while the AVL tree answers what a device measured during a particular time interval. Selecting the same ESP32 identifier in both areas connects live network monitoring to historical sensor analysis. The tree is a storage/query structure; a graphical tree diagram is not required for it to operate correctly, although a visualisation can provide extra evidence of balancing.
+
+3.2 Weighted Graph — ESP32 network topology
+
+What a graph is
+
+A graph consists of vertices (nodes) and edges (connections). Smart-X models each ESP32 sensor and the central gateway as vertices. An edge represents a possible wireless link between two devices. The links are undirected in the demonstration graph, so the connection is traversable in either direction when both endpoints are online. Each edge has a weight representing a simulated relative link cost.
+
+The graph is represented with dictionaries and adjacency lists rather than a dense adjacency matrix. This is suitable for a mesh in which each device connects to a limited subset of other devices.
+
+Role in Smart-X
+
+The MeshGraphService maintains a node lookup and neighbouring weighted links. Its seeded network contains:
+
+Nodes: GATEWAY-001, ESP32-0001, ESP32-0002, ESP32-0003, ESP32-0004.
+
+|Connection              |Weight|
+|------------------------|-----:|
+|GATEWAY-001 — ESP32-0001|2     |
+|GATEWAY-001 — ESP32-0002|4     |
+|ESP32-0001 — ESP32-0002 |1     |
+|ESP32-0001 — ESP32-0003 |5     |
+|ESP32-0002 — ESP32-0003 |2     |
+|ESP32-0002 — ESP32-0004 |6     |
+|ESP32-0003 — ESP32-0004 |3     |
+
+These are demonstration weights, not measured battery consumption or real radio transmission costs. A future deployment could derive weights from RSSI, packet loss, latency or energy usage.
+
+Relevant C# example: adjacency-list representation
+
+private readonly Dictionary<string, MeshNode> _nodes =
+
+    new(StringComparer.OrdinalIgnoreCase);
+
+
+
+private readonly Dictionary<string, List<MeshEdge>> _adjacency =
+
+    new(StringComparer.OrdinalIgnoreCase);
+
+
+
+// Illustrative helper for an undirected graph:
+
+private void AddConnection(string from, string to, double weight)
+
+{
+
+    _adjacency[from].Add(new MeshEdge
+
+    {
+
+        SourceId = from,
+
+        DestinationId = to,
+
+        Weight = weight
+
+    });
+
+
+
+    _adjacency[to].Add(new MeshEdge
+
+    {
+
+        SourceId = to,
+
+        DestinationId = from,
+
+        Weight = weight
+
+    });
+
+}
+
+Explanation: _nodes provides direct lookup by device identifier. _adjacency[nodeId] contains only that device’s neighbours, allowing algorithms to explore local connections efficiently. An undirected connection is stored in both directions for traversal; the topology API can still return each physical link once for display. The exact MeshEdge model and construction syntax should be checked against MeshGraphService.cs.
+
+Why this improves efficiency
+
+Let V be the number of devices and E the number of links. An adjacency-list graph uses O(V + E) storage, compared with O(V²) for an adjacency matrix. Looking up a device by dictionary key is O(1) on average; iterating its neighbours is O(degree of that device). This matters as the network grows because most mesh devices are not directly connected to every other device.
+
+BFS traversal: connected and unreachable devices
+
+Breadth-First Search uses a queue to visit the gateway first, then its immediate neighbours, then their neighbours. It is appropriate for identifying which nodes are reachable and calculating the minimum number of hops in an unweighted sense.
+
+var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+var queue = new Queue<string>();
+
+var hopCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+
+
+visited.Add("GATEWAY-001");
+
+queue.Enqueue("GATEWAY-001");
+
+hopCounts["GATEWAY-001"] = 0;
+
+
+
+while (queue.Count > 0)
+
+{
+
+    string current = queue.Dequeue();
+
+
+
+    foreach (var edge in _adjacency[current])
+
+    {
+
+        string neighbour = edge.DestinationId;
+
+        if (!_nodes[neighbour].IsOnline || !visited.Add(neighbour))
+
+            continue;
+
+
+
+        hopCounts[neighbour] = hopCounts[current] + 1;
+
+        queue.Enqueue(neighbour);
+
+    }
+
+}
+
+Explanation: The queue ensures level-by-level traversal; the visited set prevents repeated processing in a cyclic mesh. Offline neighbours are skipped. BFS runs in O(V + E) time and uses O(V) additional memory. BFS hop counts do not account for edge weights, so BFS is not interchangeable with Dijkstra for weighted least-cost routing.
+
+WPF graph visualisation and fault simulation
+
+MeshTopologyWindow retrieves GET /api/mesh/topology and draws circles for nodes and lines for links on a WPF Canvas. Blue indicates the gateway, green an online ESP32 device, and red an offline device. Links touching an offline device are grey and dashed. The currently calculated route is highlighted in orange.
+
+Disconnect/reconnect buttons call the API to change a node’s status. After a change, the desktop refreshes the graph, recalculates the route and updates the network recovery message. The network can remain operational through an alternative route even when one sensor is offline.
+
+3.3 Minimum Spanning Tree — Prim’s algorithm
+
+What an MST is
+
+A minimum spanning tree of a connected, weighted, undirected graph is a subset of edges that:
+
+1. Connects every vertex in the graph.
+
+2. Contains no cycles.
+
+3. Has the smallest possible sum of edge weights.
+
+For V vertices, a spanning tree has exactly V − 1 edges. If the available online network is disconnected, an MST cannot span every original node; the algorithm can instead report a tree for the reachable component and identify unreachable nodes.
+
+Role in Smart-X
+
+Smart-X uses Prim’s algorithm to find a low-total-weight connection backbone starting from GATEWAY-001. This helps explain how a mesh could minimise the combined cost of a set of active links while retaining connectivity. In the seeded, fully online network, Prim’s MST selects four edges with a total weight of 8:
+
+|Selected MST connection |Weight|
+|------------------------|-----:|
+|ESP32-0001 — ESP32-0002 |1     |
+|GATEWAY-001 — ESP32-0001|2     |
+|ESP32-0002 — ESP32-0003 |2     |
+|ESP32-0003 — ESP32-0004 |3     |
+|**Total**               |**8** |
+
+The exact order of these selected links can vary depending on tie-breaking and traversal, but the total minimum weight remains 8 for the fully online seeded graph.
+
+Relevant C# example: Prim’s algorithm
+
+var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+var selected = new List<MeshEdge>();
+
+var frontier = new PriorityQueue<MeshEdge, double>();
+
+
+
+void AddFrontier(string nodeId)
+
+{
+
+    visited.Add(nodeId);
+
+
+
+    foreach (var edge in _adjacency[nodeId])
+
+    {
+
+        if (_nodes[edge.DestinationId].IsOnline &&
+
+            !visited.Contains(edge.DestinationId))
+
+        {
+
+            frontier.Enqueue(edge, edge.Weight);
+
+        }
+
+    }
+
+}
+
+
+
+AddFrontier("GATEWAY-001");
+
+
+
+while (frontier.Count > 0)
+
+{
+
+    MeshEdge edge = frontier.Dequeue();
+
+
+
+    if (visited.Contains(edge.DestinationId))
+
+        continue; // Would introduce a cycle.
+
+
+
+    selected.Add(edge);
+
+    AddFrontier(edge.DestinationId);
+
+}
+
+
+
+double totalWeight = selected.Sum(edge => edge.Weight);
+
+Explanation: The priority queue always exposes the lowest-weight candidate connection. visited prevents the algorithm from adding an edge that would form a cycle with already selected nodes. Every time a new node joins the tree, its outgoing edges are added to the frontier. With a binary-heap priority queue and adjacency lists, a standard lazy implementation runs in O(E log E) time (often described as O(E log V) for simple graphs) and uses O(V + E) space.
+
+Contribution to efficiency — and an important limitation
+
+The MST minimises the total weight of the selected network backbone. It does not guarantee that the path between any two particular devices is the shortest path in the original graph. It is therefore appropriate for analysing an economical network-wide connection structure, whereas Dijkstra’s algorithm is used to calculate the lowest-cost route for an individual packet or destination.
+
+Furthermore, a lower simulated link weight is not automatically proof of lower real-world power consumption. The demonstration models relative routing cost; physical energy efficiency would require measured or justified energy-based weights.
+
+3.4 Dijkstra’s algorithm — shortest weighted route
+
+Dijkstra’s algorithm complements the MST by finding the minimum-total-weight path from the gateway to a specific ESP32 destination, assuming non-negative edge weights. It maintains the lowest known cost to each reachable node and repeatedly explores the node with the smallest tentative cost.
+
+var costs = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
+
+{
+
+    ["GATEWAY-001"] = 0
+
+};
+
+
+
+var previous = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+var queue = new PriorityQueue<string, double>();
+
+queue.Enqueue("GATEWAY-001", 0);
+
+
+
+while (queue.TryDequeue(out string? current, out double currentCost))
+
+{
+
+    if (currentCost > costs[current]) continue;
+
+
+
+    foreach (var edge in _adjacency[current])
+
+    {
+
+        if (!_nodes[edge.DestinationId].IsOnline) continue;
+
+
+
+        double candidate = currentCost + edge.Weight;
+
+        if (!costs.TryGetValue(edge.DestinationId, out double best) ||
+
+            candidate < best)
+
+        {
+
+            costs[edge.DestinationId] = candidate;
+
+            previous[edge.DestinationId] = current;
+
+            queue.Enqueue(edge.DestinationId, candidate);
+
+        }
+
+    }
+
+}
+
+The previous dictionary allows the selected path to be reconstructed from the destination back to the gateway. A priority-queue implementation typically runs in O((V + E) log V) time for a simple graph.
+
+Demonstrated behaviour:
+
+|Network state         |Shortest route to ESP32-0004                                   |Cost|Hops|
+|----------------------|---------------------------------------------------------------|---:|---:|
+|All nodes online      |GATEWAY-001 → ESP32-0001 → ESP32-0002 → ESP32-0003 → ESP32-0004|8   |4   |
+|ESP32-0002 offline    |GATEWAY-001 → ESP32-0001 → ESP32-0003 → ESP32-0004             |10  |3   |
+|ESP32-0002 reconnected|Original optimal route restored                                |8   |4   |
+
+The failover path has fewer hops but higher cost, showing why weighted routing is more informative than hop count alone. The WPF graph highlights the current path in orange and marks unavailable links as dashed.
+
+3.5 Comparison of the Part 3 data structures and algorithms
+
+|Component                    |Primary purpose                               |Typical complexity                        |Benefit to Smart-X                           |
+|-----------------------------|----------------------------------------------|------------------------------------------|---------------------------------------------|
+|AVL tree                     |Index timestamped telemetry                   |Insert/search O(log n); range O(log n + k)|Fast historical queries over growing data    |
+|Weighted adjacency-list graph|Store device connectivity                     |Space O(V + E)                            |Scalable, sparse network representation      |
+|BFS                          |Find reachable nodes and minimum hop counts   |O(V + E)                                  |Detect disconnected/unreachable devices      |
+|Prim MST                     |Minimise total weight of a connecting backbone|O(E log E) with heap                      |Analyse economical network-wide links        |
+|Dijkstra                     |Find minimum-weight path to a destination     |O((V + E) log V)                          |Recalculate an alternative route after faults|
+
+These structures are complementary rather than competing. The AVL tree indexes historical measurements; the graph models current connectivity; BFS assesses reachability; Prim selects a minimum-weight backbone; and Dijkstra calculates an individual least-cost route.
+
+4. Part 3 API endpoints
+
+The development API used by the WPF client is http://localhost:5016/.
+
+|Method|Endpoint                                                                                |Purpose                             |
+|------|----------------------------------------------------------------------------------------|------------------------------------|
+|GET   |`/api/mesh/topology`                                                                    |Return nodes, links and totals      |
+|GET   |`/api/mesh/bfs/GATEWAY-001`                                                             |Traverse the reachable network      |
+|GET   |`/api/mesh/mst/GATEWAY-001`                                                             |Calculate Prim’s MST                |
+|GET   |`/api/mesh/shortest-path/GATEWAY-001/ESP32-0004`                                        |Calculate the weighted shortest path|
+|PUT   |`/api/mesh/nodes/ESP32-0002/status?isOnline=false`                                      |Simulate a device disconnect        |
+|PUT   |`/api/mesh/nodes/ESP32-0002/status?isOnline=true`                                       |Restore a device connection         |
+|GET   |`/api/avl/history?deviceId=ESP32-0001&start=2026-01-01T00:00:00&end=2026-12-31T23:59:59`|Query historical telemetry          |
+
+Note: Endpoint examples reflect the currently implemented demonstration. Device IDs, available historical records and the port depend on the running application state and configuration.
+
+Example: retrieve topology
+
+Invoke-RestMethod http://localhost:5016/api/mesh/topology
+
+Example: disconnect and reconnect a device
+
+Invoke-RestMethod -Method Put `
+
+  "http://localhost:5016/api/mesh/nodes/ESP32-0002/status?isOnline=false"
+
+
+
+Invoke-RestMethod -Method Put `
+
+  "http://localhost:5016/api/mesh/nodes/ESP32-0002/status?isOnline=true"
+
+5. Requirements and local setup
+
+Prerequisites
+
+● Windows 10 or 11 (WPF desktop application requires Windows).
+
+● Visual Studio with the .NET desktop development and ASP.NET and web development workloads, or the corresponding .NET SDK and development tools.
+
+● The .NET SDK version specified by the project’s .csproj files (the project has been developed using .NET 10; verify the checked-in target framework).
+
+● Git and access to the Smart-X repository.
+
+● Postman (optional, for direct endpoint testing).
+
+Clone and restore
+
+git clone <YOUR-GITHUB-REPOSITORY-URL>
+
+cd SmartX-IoT-Mesh-Ecosystem
+
+dotnet restore
+
+Replace the placeholder URL with the actual repository URL. Open the repository’s .sln file in Visual Studio, if present, or open the relevant projects directly.
+
+Start the API
+
+From the repository root, run:
+
+dotnet run --project SmartX.Api --urls http://localhost:5016
+
+Wait for the terminal to report that the API is listening on port 5016. If your project uses a different launch profile or port, update the WPF HttpClient.BaseAddress accordingly.
+
+Start the WPF client
+
+In a second terminal:
+
+dotnet run --project SmartX.Desktop
+
+Alternatively, run SmartX.Api and SmartX.Desktop through Visual Studio using multiple startup projects. Start the API before opening the mesh dashboard.
+
+Navigate the application
+
+1. Open the Smart-X main menu.
+
+2. Select Open Mesh Network.
+
+3. Inspect the node and connection grids and the network graph.
+
+4. Run BFS Traversal, Prim’s MST and Dijkstra Path.
+
+5. In Mesh Fault Simulation, disconnect ESP32-0002, observe rerouting and then reconnect it.
+
+6. In Historical Sensor Telemetry, select a device and a date range containing stored readings, then select Search Historical Telemetry.
+
+6. Verification and demonstration scenarios
+
+|Test                     |Action                                     |Expected outcome                                         |
+|-------------------------|-------------------------------------------|---------------------------------------------------------|
+|Topology                 |Open mesh dashboard                        |Five seeded nodes, seven connections                     |
+|BFS                      |Select BFS Traversal                       |Reachable devices and hop counts are returned            |
+|Prim MST                 |Select Prim’s MST while all nodes online   |Four selected links, total weight 8                      |
+|Dijkstra                 |Select Dijkstra Path while all nodes online|Cost 8, four hops; current route highlighted             |
+|Fault simulation         |Disconnect ESP32-0002                      |Device turns red; attached links become dashed           |
+|Automatic reroute        |Inspect Dijkstra result after disconnect   |Alternative route through ESP32-0003, cost 10, three hops|
+|Recovery                 |Reconnect ESP32-0002                       |Device turns green; optimal cost-8 route returns         |
+|AVL history              |Search a populated date range              |Timestamped readings appear in the history grid          |
+|Invalid/unreachable route|Query a missing or unreachable destination |API reports no valid path rather than inventing a route  |
+
+Important: The seed network is a simulation. These tests demonstrate graph algorithms and UI/backend integration, not live radio communication with physical ESP32 hardware.
+
+7. Troubleshooting
+
+The mesh dashboard says “Disconnected” or fails to load. Verify that SmartX.Api is running and listening on http://localhost:5016/, and check that the desktop application’s HttpClient.BaseAddress matches.
+
+A node remains offline after testing. Use Reconnect Device or the corresponding PUT endpoint. Re-run Dijkstra to verify that the original route is restored.
+
+The graph does not highlight the latest route. Confirm that the current successful Dijkstra response updates _highlightedRoute and triggers LoadMeshTopologyAsync() so the canvas is redrawn with the latest path.
+
+Historical telemetry returns no records. Select a device and time range that contains ingested readings. An empty result does not necessarily indicate an AVL tree failure.
+
+The desktop project does not run on macOS/Linux. The UI uses Windows Presentation Foundation (WPF), which is Windows-specific; the API can be run separately on a supported .NET platform.
+
+8. Source code guide
+
+● SmartX.Api/Services/MeshGraphService.cs — graph storage, weighted edges, node status, BFS, Prim and Dijkstra logic.
+
+● SmartX.Desktop/Views/MeshTopologyWindow.xaml — topology, algorithm, recovery and history UI controls.
+
+● SmartX.Desktop/Views/MeshTopologyWindow.xaml.cs — HTTP integration, canvas rendering, route highlighting, fault simulation and history retrieval.
+
+● AVL history service and API endpoint — locate the tree implementation and /api/avl/history mapping in the API project; confirm their exact filenames in the repository before final submission.
+
+● SmartX.Desktop/MainWindow.xaml and MainWindow.xaml.cs — main-menu integration.
+
+
+
+
+
+
+
 REFERENCES
 
 Majib, Y. et al. (2023) ‘Detecting anomalies within smart buildings using do-it-yourself internet of things’, Journal of Ambient Intelligence and Humanized Computing, 14, pp. 4727–4743. doi: 10.1007/s12652-022-04376-w.
