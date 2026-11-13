@@ -40,6 +40,14 @@ namespace SmartX.Desktop.Views
         public List<string> UnreachableNodes { get; set; } = new();
     }
 
+    public class DijkstraResponse
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        public List<string> Path { get; set; } = new();
+        public double TotalCost { get; set; }
+        public int HopCount { get; set; }
+    }
 
 
     public partial class MeshTopologyWindow : Window
@@ -202,6 +210,50 @@ namespace SmartX.Desktop.Views
             }
         }
 
+
+
+        private async void btnDijkstra_Click(
+        object sender,
+        RoutedEventArgs e)
+        {
+            btnDijkstra.IsEnabled = false;
+            txtAlgorithmResult.Text = "Calculating shortest path...";
+
+            try
+            {
+                var result = await _httpClient.GetFromJsonAsync<DijkstraResponse>(
+                "api/mesh/shortest-path/GATEWAY-001/ESP32-0004");
+
+                if (result == null)
+                {
+                    txtAlgorithmResult.Text = "No shortest-path result returned.";
+                    return;
+                }
+
+                if (!result.Success)
+                {
+                    txtAlgorithmResult.Text = result.Message;
+                    return;
+                }
+
+                string path = string.Join(" → ", result.Path);
+
+                txtAlgorithmResult.Text =
+                $"Dijkstra's Shortest Path Completed\n\n" +
+                $"Route: {path}\n\n" +
+                $"Total cost: {result.TotalCost}\n" +
+                $"Hop count: {result.HopCount}";
+            }
+            catch (Exception ex)
+            {
+                txtAlgorithmResult.Text =
+                $"Dijkstra calculation failed: {ex.Message}";
+            }
+            finally
+            {
+                btnDijkstra.IsEnabled = true;
+            }
+        }
 
 
         public class MeshTopologyResponse
