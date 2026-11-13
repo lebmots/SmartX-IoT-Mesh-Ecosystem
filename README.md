@@ -1,5 +1,7 @@
 Smart-X IoT Mesh Ecosystem
 
+POE DEMO : https://youtu.be/9Npb_dsEv6o?si=pH63MQlHzIFb4bvG
+
 Demo Part 1: https://www.youtube.com/watch?v=8jRu0zl8MOw
 **Demo Part 2:** https://youtu.be/KevP-UWkXMo?si=3SVRvszNwb95SHmL 
 
