@@ -255,6 +255,112 @@ namespace SmartX.Desktop.Views
             }
         }
 
+        private async void btnDisconnectNode_Click(
+object sender,
+RoutedEventArgs e)
+        {
+            await UpdateNodeStatusAsync(false);
+        }
+
+        private async void btnReconnectNode_Click(
+        object sender,
+        RoutedEventArgs e)
+        {
+            await UpdateNodeStatusAsync(true);
+        }
+
+        private async Task UpdateNodeStatusAsync(bool isOnline)
+        {
+            if (cmbFaultDevice.SelectedItem is not
+            System.Windows.Controls.ComboBoxItem selectedItem)
+            {
+                txtFaultStatus.Text = "Please select an ESP32 device.";
+                return;
+            }
+
+            string nodeId = selectedItem.Content?.ToString() ?? "";
+
+            if (string.IsNullOrWhiteSpace(nodeId))
+                return;
+
+            btnDisconnectNode.IsEnabled = false;
+            btnReconnectNode.IsEnabled = false;
+
+            try
+            {
+                txtFaultStatus.Text = isOnline
+                ? $"Reconnecting {nodeId}..."
+                : $"Disconnecting {nodeId}...";
+
+                string url =
+                $"api/mesh/nodes/{Uri.EscapeDataString(nodeId)}/status?isOnline={isOnline.ToString().ToLowerInvariant()}";
+
+                using var response =
+                await _httpClient.PutAsync(url, null);
+
+                response.EnsureSuccessStatusCode();
+
+                txtFaultStatus.Text = isOnline
+                ? $"{nodeId} successfully reconnected."
+                : $"{nodeId} successfully disconnected.";
+
+                await LoadMeshTopologyAsync();
+                await RecalculateRouteAsync();
+            }
+            catch (Exception ex)
+            {
+                txtFaultStatus.Text =
+                $"Unable to update device status: {ex.Message}";
+            }
+            finally
+            {
+                btnDisconnectNode.IsEnabled = true;
+                btnReconnectNode.IsEnabled = true;
+            }
+        }
+
+
+        private async Task RecalculateRouteAsync()
+        {
+            try
+            {
+                txtAlgorithmResult.Text =
+                "Recalculating shortest route after network change...";
+
+                var result = await _httpClient.GetFromJsonAsync<DijkstraResponse>(
+                "api/mesh/shortest-path/GATEWAY-001/ESP32-0004");
+
+                if (result == null)
+                {
+                    txtAlgorithmResult.Text =
+                    "No routing result was returned.";
+                    return;
+                }
+
+                if (!result.Success)
+                {
+                    txtAlgorithmResult.Text =
+                    $"Route unavailable: {result.Message}";
+                    return;
+                }
+
+                string route = string.Join(" → ", result.Path);
+
+                txtAlgorithmResult.Text =
+                $"Dynamic Route Recalculation Completed\n\n" +
+                $"Route: {route}\n\n" +
+                $"Total cost: {result.TotalCost}\n" +
+                $"Hop count: {result.HopCount}";
+            }
+            catch (Exception ex)
+            {
+                txtAlgorithmResult.Text =
+                $"Unable to recalculate route: {ex.Message}";
+            }
+        }
+
+
+
 
         public class MeshTopologyResponse
         {

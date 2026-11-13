@@ -184,6 +184,75 @@ TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
 
+                <!-- Mesh Fault Simulation -->
+                <Border Background="White"
+CornerRadius="10"
+Padding="20"
+Margin="0,20,0,20">
+
+                    <StackPanel>
+
+                        <TextBlock Text="Mesh Fault Simulation"
+FontSize="19"
+FontWeight="Bold"
+Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Simulate device disconnections and restore mesh connectivity."
+Foreground="#64748B"
+Margin="0,0,0,15"/>
+
+                        <TextBlock Text="Select ESP32 Device"
+FontWeight="SemiBold"
+Margin="0,0,0,6"/>
+
+                        <ComboBox x:Name="cmbFaultDevice"
+Width="250"
+Height="35"
+HorizontalAlignment="Left"
+SelectedIndex="0"
+Margin="0,0,0,15">
+
+                            <ComboBoxItem Content="ESP32-0001"/>
+                            <ComboBoxItem Content="ESP32-0002"/>
+                            <ComboBoxItem Content="ESP32-0003"/>
+                            <ComboBoxItem Content="ESP32-0004"/>
+
+                        </ComboBox>
+
+                        <WrapPanel>
+
+                            <Button x:Name="btnDisconnectNode"
+Content="Disconnect Device"
+Width="170"
+Height="42"
+Margin="0,0,12,10"
+Background="#DC2626"
+Foreground="White"
+Click="btnDisconnectNode_Click"/>
+
+                            <Button x:Name="btnReconnectNode"
+Content="Reconnect Device"
+Width="170"
+Height="42"
+Margin="0,0,12,10"
+Background="#16A34A"
+Foreground="White"
+Click="btnReconnectNode_Click"/>
+
+                        </WrapPanel>
+
+                        <TextBlock x:Name="txtFaultStatus"
+Text="All devices are ready for simulation."
+Foreground="#64748B"
+Margin="0,12,0,0"
+TextWrapping="Wrap"/>
+
+                    </StackPanel>
+
+                </Border>
+
+
+
             </StackPanel>
         </ScrollViewer>
     </Grid>
