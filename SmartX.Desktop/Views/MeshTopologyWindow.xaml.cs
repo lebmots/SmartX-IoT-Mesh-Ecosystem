@@ -4,6 +4,10 @@ using System.Net.Http.Json;
 using System.Windows;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace SmartX.Desktop.Views
 {
@@ -93,6 +97,7 @@ namespace SmartX.Desktop.Views
 
                 dgMeshNodes.ItemsSource = topology.Nodes;
                 dgMeshConnections.ItemsSource = topology.Connections;
+                DrawMeshNetwork(topology);
             }
             catch (Exception ex)
             {
@@ -573,6 +578,135 @@ RoutedEventArgs e)
             public List<MeshNodeDto> Nodes { get; set; } = new();
 
             public List<MeshConnectionDto> Connections { get; set; } = new();
+        }
+
+
+
+        private void DrawMeshNetwork(MeshTopologyResponse topology)
+        {
+            canvasMeshNetwork.Children.Clear();
+
+            // Fixed display positions for the five seeded mesh nodes.
+            // Node and connection data still come from the API.
+            var positions = new Dictionary<string, Point>(
+            StringComparer.OrdinalIgnoreCase)
+            {
+                ["GATEWAY-001"] = new Point(475, 55),
+                ["ESP32-0001"] = new Point(220, 155),
+                ["ESP32-0002"] = new Point(730, 155),
+                ["ESP32-0003"] = new Point(220, 300),
+                ["ESP32-0004"] = new Point(730, 300)
+            };
+
+            var nodes = topology.Nodes.ToDictionary(
+            node => node.NodeId,
+            StringComparer.OrdinalIgnoreCase);
+
+            // Draw the network connections first.
+            foreach (var connection in topology.Connections)
+            {
+                if (!positions.TryGetValue(
+                connection.SourceId, out Point start) ||
+                !positions.TryGetValue(
+                connection.DestinationId, out Point end))
+                {
+                    continue;
+                }
+
+                bool connectionOnline =
+                nodes.TryGetValue(connection.SourceId, out var source) &&
+                nodes.TryGetValue(connection.DestinationId, out var destination) &&
+                source.IsOnline &&
+                destination.IsOnline;
+
+                var line = new Line
+                {
+                    X1 = start.X,
+                    Y1 = start.Y,
+                    X2 = end.X,
+                    Y2 = end.Y,
+                    Stroke = connectionOnline
+                ? Brushes.Teal
+                : Brushes.LightGray,
+                    StrokeThickness = connectionOnline ? 3 : 2,
+                    StrokeDashArray = connectionOnline
+                ? null
+                : new DoubleCollection { 5, 4 }
+                };
+
+                canvasMeshNetwork.Children.Add(line);
+
+                // Display the connection weight near its midpoint.
+                var weightLabel = new TextBlock
+                {
+                    Text = connection.Weight.ToString("0.##"),
+                    FontSize = 13,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = Brushes.DarkSlateGray,
+                    Background = Brushes.White,
+                    Padding = new Thickness(5, 2, 5, 2)
+                };
+
+                Canvas.SetLeft(
+                weightLabel,
+                (start.X + end.X) / 2 + 6);
+
+                Canvas.SetTop(
+                weightLabel,
+                (start.Y + end.Y) / 2 - 12);
+
+                canvasMeshNetwork.Children.Add(weightLabel);
+            }
+
+            // Draw the gateway and sensor nodes.
+            foreach (var node in topology.Nodes)
+            {
+                if (!positions.TryGetValue(node.NodeId, out Point position))
+                    continue;
+
+                Brush nodeColour = node.IsGateway
+                ? Brushes.RoyalBlue
+                : node.IsOnline
+                ? Brushes.ForestGreen
+                : Brushes.Firebrick;
+
+                var circle = new Ellipse
+                {
+                    Width = 64,
+                    Height = 64,
+                    Fill = nodeColour,
+                    Stroke = Brushes.White,
+                    StrokeThickness = 3
+                };
+
+                Canvas.SetLeft(circle, position.X - 32);
+                Canvas.SetTop(circle, position.Y - 32);
+
+                canvasMeshNetwork.Children.Add(circle);
+
+                var nodeLabel = new TextBlock
+                {
+                    Text = node.NodeId,
+                    FontSize = 13,
+                    FontWeight = FontWeights.SemiBold,
+                    Foreground = Brushes.Black,
+                    TextAlignment = TextAlignment.Center,
+                    Width = 120
+                };
+
+                Canvas.SetLeft(nodeLabel, position.X - 60);
+                Canvas.SetTop(nodeLabel, position.Y + 38);
+
+                canvasMeshNetwork.Children.Add(nodeLabel);
+            }
+
+            int onlineCount = topology.Nodes.Count(n => n.IsOnline);
+            int offlineCount = topology.Nodes.Count - onlineCount;
+
+            txtMeshVisualStatus.Text =
+            $"Graph loaded: {topology.TotalNodes} nodes, " +
+            $"{topology.TotalConnections} connections. " +
+            $"{onlineCount} online, {offlineCount} offline.";
         }
 
         public class MeshNodeDto

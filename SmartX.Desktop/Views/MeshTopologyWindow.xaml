@@ -124,6 +124,84 @@ IsReadOnly="True"/>
                     </StackPanel>
                 </Border>
 
+                <!-- Live Mesh Network Visualisation -->
+                <Border Background="White"
+CornerRadius="10"
+Padding="20"
+Margin="0,0,0,20">
+
+                    <StackPanel>
+
+                        <TextBlock Text="Live Mesh Network Visualisation"
+FontSize="19"
+FontWeight="Bold"
+Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Visual representation of the gateway, ESP32 sensor nodes and weighted mesh connections."
+Foreground="#64748B"
+TextWrapping="Wrap"
+Margin="0,0,0,15"/>
+
+                        <Border Background="#F8FAFC"
+BorderBrush="#E2E8F0"
+BorderThickness="1"
+CornerRadius="8"
+Padding="10">
+
+                            <Viewbox Stretch="Uniform"
+StretchDirection="DownOnly">
+
+                                <Canvas x:Name="canvasMeshNetwork"
+Width="950"
+Height="380"
+Background="#F8FAFC"/>
+
+                            </Viewbox>
+
+                        </Border>
+
+                        <TextBlock x:Name="txtMeshVisualStatus"
+Text="Waiting for mesh topology data..."
+Foreground="#64748B"
+Margin="0,12,0,0"
+TextWrapping="Wrap"/>
+
+                        <WrapPanel Margin="0,12,0,0">
+
+                            <StackPanel Orientation="Horizontal"
+Margin="0,0,20,0">
+                                <Ellipse Width="12"
+Height="12"
+Fill="#16A34A"
+Margin="0,0,6,0"/>
+                                <TextBlock Text="Online Device"/>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal"
+Margin="0,0,20,0">
+                                <Ellipse Width="12"
+Height="12"
+Fill="#DC2626"
+Margin="0,0,6,0"/>
+                                <TextBlock Text="Offline Device"/>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="12"
+Height="12"
+Fill="#2563EB"
+Margin="0,0,6,0"/>
+                                <TextBlock Text="Gateway"/>
+                            </StackPanel>
+
+                        </WrapPanel>
+
+                    </StackPanel>
+
+                </Border>
+
+
+
                 <Border Background="White"
 CornerRadius="10"
 Padding="20">
