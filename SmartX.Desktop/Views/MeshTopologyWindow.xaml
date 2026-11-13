@@ -146,11 +146,17 @@ BorderThickness="0"
 Cursor="Hand"
 Click="btnBfs_Click"/>
 
-                            <Button Content="Prim's MST"
+                            <Button x:Name="btnPrim"
+Content="Prim's MST"
 Width="160"
 Height="42"
 Margin="0,0,12,10"
-IsEnabled="False"/>
+Background="#2563EB"
+Foreground="White"
+BorderThickness="0"
+FontWeight="SemiBold"
+Cursor="Hand"
+Click="btnPrim_Click"/>
 
                             <Button Content="Dijkstra Path"
 Width="160"

@@ -22,6 +22,23 @@ namespace SmartX.Desktop.Views
         public List<string> UnreachableNodes { get; set; } = new();
     }
 
+    public class MstEdgeResponse
+    {
+        public string SourceId { get; set; } = "";
+        public string DestinationId { get; set; } = "";
+        public double Weight { get; set; }
+    }
+
+    public class MstResponse
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
+        [System.Text.Json.Serialization.JsonPropertyName("selectedConnections")]
+        public List<MstEdgeResponse> Edges { get; set; } = new();
+        public double TotalWeight { get; set; }
+        public List<string> VisitedNodes { get; set; } = new();
+        public List<string> UnreachableNodes { get; set; } = new();
+    }
 
 
 
@@ -133,7 +150,57 @@ namespace SmartX.Desktop.Views
         }
 
 
+        private async void btnPrim_Click(
+        object sender,
+        RoutedEventArgs e)
+        {
+            btnPrim.IsEnabled = false;
+            txtAlgorithmResult.Text = "Calculating Prim's MST...";
 
+            try
+            {
+                var result = await _httpClient.GetFromJsonAsync<MstResponse>(
+                "api/mesh/mst/GATEWAY-001");
+
+                if (result == null)
+                {
+                    txtAlgorithmResult.Text = "No MST result returned.";
+                    return;
+                }
+
+                if (!result.Success)
+                {
+                    txtAlgorithmResult.Text = result.Message;
+                    return;
+                }
+
+                string connections = string.Join(
+                "\n",
+                result.Edges.Select(edge =>
+                $"{edge.SourceId} → {edge.DestinationId} " +
+                $"(Weight: {edge.Weight})"));
+
+                string unreachable = result.UnreachableNodes.Count == 0
+                ? "None"
+                : string.Join(", ", result.UnreachableNodes);
+
+                txtAlgorithmResult.Text =
+                $"Prim's Minimum Spanning Tree Completed\n\n" +
+                $"Selected connections:\n{connections}\n\n" +
+                $"Total weight: {result.TotalWeight}\n" +
+                $"Visited nodes: {result.VisitedNodes.Count}\n" +
+                $"Unreachable nodes: {unreachable}";
+            }
+            catch (Exception ex)
+            {
+                txtAlgorithmResult.Text =
+                $"Prim's MST failed: {ex.Message}";
+            }
+            finally
+            {
+                btnPrim.IsEnabled = true;
+            }
+        }
 
 
 
