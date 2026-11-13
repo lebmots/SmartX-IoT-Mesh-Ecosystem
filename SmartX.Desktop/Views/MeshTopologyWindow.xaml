@@ -291,6 +291,117 @@ Foreground="#166534"/>
 
                 </Border>
 
+                <!-- Historical Sensor Telemetry -->
+                <Border Background="White"
+CornerRadius="10"
+Padding="20"
+Margin="0,0,0,20">
+
+                    <StackPanel>
+
+                        <TextBlock Text="Historical Sensor Telemetry"
+FontSize="19"
+FontWeight="Bold"
+Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Search timestamped sensor readings using AVL Tree range queries."
+Foreground="#64748B"
+TextWrapping="Wrap"
+Margin="0,0,0,15"/>
+
+                        <TextBlock Text="Select ESP32 Device"
+FontWeight="SemiBold"
+Margin="0,0,0,6"/>
+
+                        <ComboBox x:Name="cmbHistoryDevice"
+Width="250"
+Height="35"
+HorizontalAlignment="Left"
+SelectedIndex="0"
+Margin="0,0,0,15">
+
+                            <ComboBoxItem Content="ESP32-0001"/>
+                            <ComboBoxItem Content="ESP32-0002"/>
+                            <ComboBoxItem Content="ESP32-0003"/>
+                            <ComboBoxItem Content="ESP32-0004"/>
+
+                        </ComboBox>
+
+                        <TextBlock Text="Start Date"
+FontWeight="SemiBold"
+Margin="0,0,0,6"/>
+
+                        <DatePicker x:Name="dpHistoryStart"
+Width="250"
+HorizontalAlignment="Left"
+SelectedDate="2026-01-01"
+Margin="0,0,0,15"/>
+
+                        <TextBlock Text="End Date"
+FontWeight="SemiBold"
+Margin="0,0,0,6"/>
+
+                        <DatePicker x:Name="dpHistoryEnd"
+Width="250"
+HorizontalAlignment="Left"
+SelectedDate="2026-12-31"
+Margin="0,0,0,15"/>
+
+                        <Button x:Name="btnSearchHistory"
+Content="Search Historical Telemetry"
+Width="230"
+Height="42"
+HorizontalAlignment="Left"
+Background="#2563EB"
+Foreground="White"
+Margin="0,0,0,15"
+Click="btnSearchHistory_Click"/>
+
+                        <TextBlock x:Name="txtHistoryStatus"
+Text="Select a device and date range to search."
+Foreground="#64748B"
+TextWrapping="Wrap"
+Margin="0,0,0,15"/>
+
+                        <DataGrid x:Name="dgHistoryReadings"
+AutoGenerateColumns="False"
+IsReadOnly="True"
+CanUserAddRows="False"
+MinHeight="180"
+MaxHeight="320"
+HeadersVisibility="Column"
+GridLinesVisibility="Horizontal">
+
+                            <DataGrid.Columns>
+
+                                <DataGridTextColumn Header="Timestamp (UTC)"
+Binding="{Binding ReceivedAt}"
+Width="*"/>
+
+                                <DataGridTextColumn Header="Device"
+Binding="{Binding DeviceId}"
+Width="*"/>
+
+                                <DataGridTextColumn Header="Metric"
+Binding="{Binding Metric}"
+Width="*"/>
+
+                                <DataGridTextColumn Header="Value"
+Binding="{Binding Value}"
+Width="*"/>
+
+                                <DataGridTextColumn Header="Unit"
+Binding="{Binding Unit}"
+Width="*"/>
+
+                            </DataGrid.Columns>
+
+                        </DataGrid>
+
+                    </StackPanel>
+
+                </Border>
+
 
 
             </StackPanel>

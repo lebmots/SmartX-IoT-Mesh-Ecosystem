@@ -474,6 +474,95 @@ RoutedEventArgs e)
             }
         }
 
+        public class HistoricalTelemetryReading
+        {
+            public string DeviceId { get; set; } = "";
+            public string Metric { get; set; } = "";
+            public double Value { get; set; }
+            public string Unit { get; set; } = "";
+            public DateTime ReceivedAt { get; set; }
+        }
+
+        public class HistoricalTelemetryResponse
+        {
+            public string DeviceId { get; set; } = "";
+            public int TotalReadings { get; set; }
+
+            public List<HistoricalTelemetryReading> Readings { get; set; }
+            = new();
+        }
+
+
+        private async void btnSearchHistory_Click(
+        object sender,
+        RoutedEventArgs e)
+        {
+            if (cmbHistoryDevice.SelectedItem is not
+            System.Windows.Controls.ComboBoxItem selectedItem)
+            {
+                txtHistoryStatus.Text = "Please select an ESP32 device.";
+                return;
+            }
+
+            string deviceId = selectedItem.Content?.ToString() ?? "";
+
+            if (!dpHistoryStart.SelectedDate.HasValue ||
+            !dpHistoryEnd.SelectedDate.HasValue)
+            {
+                txtHistoryStatus.Text =
+                "Please select both a start date and an end date.";
+                return;
+            }
+
+            DateTime startDate = dpHistoryStart.SelectedDate.Value.Date;
+            DateTime endDate = dpHistoryEnd.SelectedDate.Value.Date
+            .AddDays(1).AddTicks(-1);
+
+            if (startDate > endDate)
+            {
+                txtHistoryStatus.Text =
+                "Start date cannot be after end date.";
+                return;
+            }
+
+            btnSearchHistory.IsEnabled = false;
+            txtHistoryStatus.Text = "Searching AVL Tree...";
+            dgHistoryReadings.ItemsSource = null;
+
+            try
+            {
+                string url =
+                $"api/avl/history?deviceId={Uri.EscapeDataString(deviceId)}" +
+                $"&start={Uri.EscapeDataString(startDate.ToString("yyyy-MM-ddTHH:mm:ss"))}" +
+                $"&end={Uri.EscapeDataString(endDate.ToString("yyyy-MM-ddTHH:mm:ss"))}";
+
+                var result = await _httpClient
+                .GetFromJsonAsync<HistoricalTelemetryResponse>(url);
+
+                if (result == null)
+                {
+                    txtHistoryStatus.Text =
+                    "No response received from the AVL Tree API.";
+                    return;
+                }
+
+                dgHistoryReadings.ItemsSource = result.Readings;
+
+                txtHistoryStatus.Text =
+                $"AVL Tree search completed. " +
+                $"{result.TotalReadings} reading(s) found for {deviceId}.";
+            }
+            catch (Exception ex)
+            {
+                txtHistoryStatus.Text =
+                $"Unable to retrieve historical telemetry: {ex.Message}";
+            }
+            finally
+            {
+                btnSearchHistory.IsEnabled = true;
+            }
+        }
+
 
         public class MeshTopologyResponse
         {
