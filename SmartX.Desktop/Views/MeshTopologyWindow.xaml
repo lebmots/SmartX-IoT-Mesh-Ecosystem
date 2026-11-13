@@ -251,6 +251,46 @@ TextWrapping="Wrap"/>
 
                 </Border>
 
+                <!-- Network Recovery Status -->
+                <Border Background="White"
+CornerRadius="10"
+Padding="20"
+Margin="0,0,0,20">
+
+                    <StackPanel>
+
+                        <TextBlock Text="Network Recovery Status"
+FontSize="19"
+FontWeight="Bold"
+Margin="0,0,0,15"/>
+
+                        <Border x:Name="brdNetworkRecovery"
+Background="#DCFCE7"
+CornerRadius="8"
+Padding="15">
+
+                            <StackPanel>
+
+                                <TextBlock x:Name="txtRecoveryHeading"
+Text="Network Status Pending"
+FontSize="16"
+FontWeight="Bold"
+Foreground="#166534"
+Margin="0,0,0,8"/>
+
+                                <TextBlock x:Name="txtRecoveryMessage"
+Text="Waiting for network status verification."
+TextWrapping="Wrap"
+Foreground="#166534"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+                    </StackPanel>
+
+                </Border>
+
 
 
             </StackPanel>

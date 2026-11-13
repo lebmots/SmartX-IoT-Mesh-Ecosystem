@@ -306,6 +306,7 @@ RoutedEventArgs e)
 
                 await LoadMeshTopologyAsync();
                 await RecalculateRouteAsync();
+                await UpdateNetworkRecoveryStatusAsync();
             }
             catch (Exception ex)
             {
@@ -359,7 +360,119 @@ RoutedEventArgs e)
             }
         }
 
+        private async Task UpdateNetworkRecoveryStatusAsync()
+        {
+            try
+            {
+                // Get the current mesh topology.
+                using var topologyResponse = await _httpClient.GetAsync(
+                "api/mesh/topology");
 
+                topologyResponse.EnsureSuccessStatusCode();
+
+                using var topologyJson = await System.Text.Json.JsonDocument
+                .ParseAsync(await topologyResponse.Content.ReadAsStreamAsync());
+
+                var nodes = topologyJson.RootElement.GetProperty("nodes");
+
+                int offlineCount = 0;
+
+                foreach (var node in nodes.EnumerateArray())
+                {
+                    if (!node.GetProperty("isOnline").GetBoolean())
+                    {
+                        offlineCount++;
+                    }
+                }
+
+                // Check whether the gateway can reach ESP32-0004.
+                var route = await _httpClient.GetFromJsonAsync<DijkstraResponse>(
+                "api/mesh/shortest-path/GATEWAY-001/ESP32-0004");
+
+                if (route == null)
+                {
+                    throw new Exception("No routing information returned.");
+                }
+
+                if (!route.Success)
+                {
+                    brdNetworkRecovery.Background =
+                    new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(254, 226, 226));
+
+                    txtRecoveryHeading.Foreground =
+                    System.Windows.Media.Brushes.DarkRed;
+
+                    txtRecoveryMessage.Foreground =
+                    System.Windows.Media.Brushes.DarkRed;
+
+                    txtRecoveryHeading.Text =
+                    "NETWORK FAILURE - Destination Unreachable";
+
+                    txtRecoveryMessage.Text =
+                    "The gateway cannot reach ESP32-0004. " +
+                    "No valid route is currently available. " +
+                    "Reconnect the affected devices to restore connectivity.";
+                }
+                else if (offlineCount > 0)
+                {
+                    brdNetworkRecovery.Background =
+                    new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(254, 249, 195));
+
+                    txtRecoveryHeading.Foreground =
+                    System.Windows.Media.Brushes.DarkGoldenrod;
+
+                    txtRecoveryMessage.Foreground =
+                    System.Windows.Media.Brushes.DarkGoldenrod;
+
+                    txtRecoveryHeading.Text =
+                    "NETWORK DEGRADED - Rerouting Active";
+
+                    txtRecoveryMessage.Text =
+                    $"{offlineCount} device(s) offline. " +
+                    $"An available route to ESP32-0004 has been found. " +
+                    $"Current route cost: {route.TotalCost}.";
+                }
+                else
+                {
+                    brdNetworkRecovery.Background =
+                    new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(220, 252, 231));
+
+                    txtRecoveryHeading.Foreground =
+                    System.Windows.Media.Brushes.DarkGreen;
+
+                    txtRecoveryMessage.Foreground =
+                    System.Windows.Media.Brushes.DarkGreen;
+
+                    txtRecoveryHeading.Text =
+                    "NETWORK HEALTHY - All Devices Connected";
+
+                    txtRecoveryMessage.Text =
+                    $"All mesh devices are online. " +
+                    $"The gateway can reach ESP32-0004 successfully. " +
+                    $"Current route cost: {route.TotalCost}.";
+                }
+            }
+            catch (Exception ex)
+            {
+                brdNetworkRecovery.Background =
+                new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromRgb(226, 232, 240));
+
+                txtRecoveryHeading.Foreground =
+                System.Windows.Media.Brushes.DarkSlateGray;
+
+                txtRecoveryMessage.Foreground =
+                System.Windows.Media.Brushes.DarkSlateGray;
+
+                txtRecoveryHeading.Text = "NETWORK STATUS UNKNOWN";
+
+                txtRecoveryMessage.Text =
+                $"Unable to verify network health: {ex.Message}";
+            }
+        }
 
 
         public class MeshTopologyResponse
