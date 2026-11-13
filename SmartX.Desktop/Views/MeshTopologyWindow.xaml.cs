@@ -57,9 +57,13 @@ namespace SmartX.Desktop.Views
     public partial class MeshTopologyWindow : Window
     {
         private readonly HttpClient _httpClient = new()
+
         {
+
             BaseAddress = new Uri("http://localhost:5016/")
         };
+        private List<string> _highlightedRoute = new();
+       
 
         public MeshTopologyWindow()
         {
@@ -240,7 +244,8 @@ namespace SmartX.Desktop.Views
                     txtAlgorithmResult.Text = result.Message;
                     return;
                 }
-
+                _highlightedRoute = result.Path.ToList();
+                await LoadMeshTopologyAsync();
                 string path = string.Join(" → ", result.Path);
 
                 txtAlgorithmResult.Text =
@@ -342,14 +347,22 @@ RoutedEventArgs e)
                     "No routing result was returned.";
                     return;
                 }
-
                 if (!result.Success)
                 {
+                    // Clear the previous shortest path.
+                    _highlightedRoute.Clear();
+
+                    // Refresh the graph to remove outdated highlighting.
+                    await LoadMeshTopologyAsync();
+
                     txtAlgorithmResult.Text =
                     $"Route unavailable: {result.Message}";
+
                     return;
                 }
 
+                _highlightedRoute = result.Path.ToList();
+                await LoadMeshTopologyAsync();
                 string route = string.Join(" → ", result.Path);
 
                 txtAlgorithmResult.Text =
@@ -619,20 +632,53 @@ RoutedEventArgs e)
                 source.IsOnline &&
                 destination.IsOnline;
 
+                bool isHighlighted = false;
+
+                if (connectionOnline)
+                {
+                    for (int i = 0; i < _highlightedRoute.Count - 1; i++)
+                    {
+                        string from = _highlightedRoute[i];
+                        string to = _highlightedRoute[i + 1];
+
+                        if ((string.Equals(connection.SourceId, from,
+                        StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(connection.DestinationId, to,
+                        StringComparison.OrdinalIgnoreCase)) ||
+                        (string.Equals(connection.SourceId, to,
+                        StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(connection.DestinationId, from,
+                        StringComparison.OrdinalIgnoreCase)))
+                        {
+                            isHighlighted = true;
+                            break;
+                        }
+                    }
+                }
+
+
                 var line = new Line
                 {
                     X1 = start.X,
                     Y1 = start.Y,
                     X2 = end.X,
                     Y2 = end.Y,
-                    Stroke = connectionOnline
-                ? Brushes.Teal
-                : Brushes.LightGray,
-                    StrokeThickness = connectionOnline ? 3 : 2,
+
+                    Stroke = !connectionOnline
+? Brushes.LightGray
+: isHighlighted
+? Brushes.DarkOrange
+: Brushes.Teal,
+
+                    StrokeThickness = !connectionOnline
+? 2
+: isHighlighted ? 6 : 3,
+
                     StrokeDashArray = connectionOnline
-                ? null
-                : new DoubleCollection { 5, 4 }
+? null
+: new DoubleCollection { 5, 4 }
                 };
+
 
                 canvasMeshNetwork.Children.Add(line);
 
