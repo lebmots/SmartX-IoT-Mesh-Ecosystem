@@ -187,12 +187,11 @@ Click="btnCommandStream_Click"/>
                 </Border>
 
 
-                <Border Background="#F8FAFC"
+                <Border Background="White"
 CornerRadius="10"
 Padding="25"
-BorderBrush="#E2E8F0"
-BorderThickness="1"
-Opacity="0.75">
+BorderBrush="#D7DEE8"
+BorderThickness="1">
 
                     <Grid>
 
@@ -206,10 +205,10 @@ Opacity="0.75">
 Width="62"
 Height="62"
 CornerRadius="31"
-Background="#E2E8F0">
+Background="#DCFCE7">
 
                             <TextBlock Text="03"
-Foreground="#64748B"
+Foreground="#15803D"
 FontSize="22"
 FontWeight="Bold"
 HorizontalAlignment="Center"
@@ -222,26 +221,33 @@ VerticalAlignment="Center"/>
                             <TextBlock Text="Network Topology &amp; Mesh Routing"
 FontSize="21"
 FontWeight="Bold"
-Foreground="#475569"/>
+Foreground="#18212F"/>
 
                             <TextBlock Text="Visualise Smart-X mesh relationships and analyse network routing."
 FontSize="14"
 Foreground="#64748B"
 Margin="0,8,15,0"/>
 
-                            <TextBlock Text="🔒 FINAL POE"
+                            <TextBlock Text="● ACTIVE"
 FontSize="12"
 FontWeight="Bold"
-Foreground="#64748B"
+Foreground="#15803D"
 Margin="0,12,0,0"/>
+
 
                         </StackPanel>
 
                         <Button Grid.Column="2"
-Content="Coming Soon"
+x:Name="btnMeshTopology"
+Content="Open Mesh Network"
 Height="45"
-Width="150"
-IsEnabled="False"/>
+Width="160"
+Background="#2563EB"
+Foreground="White"
+BorderThickness="0"
+FontWeight="SemiBold"
+Cursor="Hand"
+Click="btnMeshTopology_Click"/>
 
                     </Grid>
 

@@ -27,6 +27,13 @@ namespace SmartX.Desktop
             telemetryWindow.ShowDialog();
         }
 
+        private void btnMeshTopology_Click(
+object sender,
+RoutedEventArgs e)
+        {
+            var window = new MeshTopologyWindow();
+            window.Show();
+        }
 
 
         private void btnCommandStream_Click(object sender, RoutedEventArgs e)
