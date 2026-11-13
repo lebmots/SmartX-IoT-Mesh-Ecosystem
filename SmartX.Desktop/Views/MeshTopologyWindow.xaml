@@ -135,11 +135,16 @@ FontWeight="Bold"
 Margin="0,0,0,15"/>
 
                         <WrapPanel>
-                            <Button Content="BFS Traversal"
+                            <Button x:Name="btnBfs"
+Content="BFS Traversal"
 Width="160"
 Height="42"
 Margin="0,0,12,10"
-IsEnabled="False"/>
+Background="#2563EB"
+Foreground="White"
+BorderThickness="0"
+Cursor="Hand"
+Click="btnBfs_Click"/>
 
                             <Button Content="Prim's MST"
 Width="160"
@@ -154,8 +159,15 @@ Margin="0,0,12,10"
 IsEnabled="False"/>
                         </WrapPanel>
 
-                        <TextBlock Text="Algorithm controls will be connected to the API in the next development step."
+                        <TextBlock Text="BFS traversal starts at the gateway and explores reachable nodes level by level."
 Foreground="#64748B"
+TextWrapping="Wrap"
+Margin="0,5,0,12"/>
+
+                        <TextBlock x:Name="txtAlgorithmResult"
+Text="Click BFS Traversal to analyse the mesh network."
+Foreground="#18212F"
+FontSize="14"
 TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>

@@ -2,9 +2,29 @@
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Windows;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SmartX.Desktop.Views
 {
+
+
+    public class BfsResponse
+    {
+        public bool Success { get; set; }
+
+        public string Message { get; set; } = "";
+
+        public List<string> VisitedNodes { get; set; } = new();
+
+        public Dictionary<string, int> HopCounts { get; set; } = new();
+
+        public List<string> UnreachableNodes { get; set; } = new();
+    }
+
+
+
+
     public partial class MeshTopologyWindow : Window
     {
         private readonly HttpClient _httpClient = new()
@@ -60,37 +80,93 @@ namespace SmartX.Desktop.Views
                 MessageBoxImage.Warning);
             }
         }
-    }
 
-    public class MeshTopologyResponse
-    {
-        public int TotalNodes { get; set; }
 
-        public int TotalConnections { get; set; }
 
-        public List<MeshNodeDto> Nodes { get; set; } = new();
+        private async void btnBfs_Click(
+        object sender,
+        RoutedEventArgs e)
+        {
+            btnBfs.IsEnabled = false;
+            txtAlgorithmResult.Text = "Running BFS traversal...";
 
-        public List<MeshConnectionDto> Connections { get; set; } = new();
-    }
+            try
+            {
+                var result = await _httpClient.GetFromJsonAsync<BfsResponse>(
+                "api/mesh/bfs/GATEWAY-001");
 
-    public class MeshNodeDto
-    {
-        public string NodeId { get; set; } = "";
+                if (result == null)
+                {
+                    txtAlgorithmResult.Text = "No BFS result returned.";
+                    return;
+                }
 
-        public string MacAddress { get; set; } = "";
+                if (!result.Success)
+                {
+                    txtAlgorithmResult.Text = result.Message;
+                    return;
+                }
 
-        public bool IsOnline { get; set; }
+                string visited = string.Join(
+                " → ",
+                result.VisitedNodes);
 
-        public bool IsGateway { get; set; }
-    }
+                string unreachable = result.UnreachableNodes.Count == 0
+                ? "None"
+                : string.Join(", ", result.UnreachableNodes);
 
-    public class MeshConnectionDto
-    {
-        public string SourceId { get; set; } = "";
+                txtAlgorithmResult.Text =
+                $"BFS Traversal Completed\n\n" +
+                $"Visit order: {visited}\n\n" +
+                $"Visited nodes: {result.VisitedNodes.Count}\n" +
+                $"Unreachable nodes: {unreachable}";
+            }
+            catch (Exception ex)
+            {
+                txtAlgorithmResult.Text =
+                $"BFS traversal failed: {ex.Message}";
+            }
+            finally
+            {
+                btnBfs.IsEnabled = true;
+            }
+        }
 
-        public string DestinationId { get; set; } = "";
 
-        public double Weight { get; set; }
+
+
+
+
+        public class MeshTopologyResponse
+        {
+            public int TotalNodes { get; set; }
+
+            public int TotalConnections { get; set; }
+
+            public List<MeshNodeDto> Nodes { get; set; } = new();
+
+            public List<MeshConnectionDto> Connections { get; set; } = new();
+        }
+
+        public class MeshNodeDto
+        {
+            public string NodeId { get; set; } = "";
+
+            public string MacAddress { get; set; } = "";
+
+            public bool IsOnline { get; set; }
+
+            public bool IsGateway { get; set; }
+        }
+
+        public class MeshConnectionDto
+        {
+            public string SourceId { get; set; } = "";
+
+            public string DestinationId { get; set; } = "";
+
+            public double Weight { get; set; }
+        }
     }
 }
 
